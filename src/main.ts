@@ -6,7 +6,7 @@ const API_BASE =
 
 type MatchRow = {
   win: boolean; k: number; d: number; a: number;
-  cs: number; duration: number; champion: string; queue: string;
+  cs: number; duration: number; champion: string; queue: string; queueId: number;
 };
 
 function render() {
@@ -154,7 +154,7 @@ function init() {
     const page = start / pageSize + 1;
     pageInfo.textContent = `페이지 ${page}`;
     prevBtn.disabled = start === 0;
-    nextBtn.disabled = lastRows.length < pageSize; // 더 없으면 비활성
+    nextBtn.disabled = lastRows.length < pageSize;
   }
 
   function applyFilter(rows: any[], f: string) {
@@ -237,8 +237,7 @@ function init() {
   nextBtn.addEventListener("click", () => { start += pageSize; loadMatches(); });
 
   const q = new URLSearchParams(location.search);
-  const preset =
-    q.get("riotId") || q.get("q") || localStorage.getItem("thunder:lastRiotId") || "";
+  const preset = q.get("riotId") || q.get("q") || localStorage.getItem("thunder:lastRiotId") || "";
   if (preset) ipt.value = preset;
   if (preset) submit();
 }
