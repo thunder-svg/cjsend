@@ -2,16 +2,8 @@ name: Vite build to docs
 on:
   push:
     branches: [main]
-    paths:
-      - 'src/**'
-      - 'public/**'
-      - 'package.json'
-      - 'vite.config.ts'
-      - 'tsconfig.json'
   workflow_dispatch: {}
-
-permissions:
-  contents: write
+permissions: { contents: write }
 
 jobs:
   build:
@@ -19,14 +11,18 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
-        with:
-          node-version: 20
+        with: { node-version: 20 }
       - name: Install deps
         run: npm install
-      - run: npm run build
+      - name: Build
+        run: npm run build
+      - name: Show tree
+        run: |
+          echo "== repo root =="; ls -la
+          echo "== docs =="; ls -la docs || true
       - uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          commit_message: 'build: vite output + lock [skip ci]'
+          commit_message: 'build: vite output [skip ci]'
           file_pattern: |
             package-lock.json
             docs/**
