@@ -2,7 +2,7 @@ document.getElementById('searchBtn').addEventListener('click', async () => {
     const summonerName = document.getElementById('summonerName').value;
     if (!summonerName) return;
 
-    const apiKey = 'YOUR_RIOT_API_KEY';  // 여기에 발급 받은 Riot API 키를 넣어야 함
+    const apiKey = 'RGAPI-95cc9156-b591-4bdd-bdf2-66386105733e';  // 여기에 발급 받은 Riot API 키를 넣어야 함
     const url = `https://na1.api.riotgames.com/lol/summoner/v4/summoners/by-name/${summonerName}?api_key=${apiKey}`;
 
     try {
