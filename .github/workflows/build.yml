@@ -6,9 +6,12 @@ on:
       - 'src/**'
       - 'public/**'
       - 'package.json'
-      - 'package-lock.json'
       - 'vite.config.ts'
       - 'tsconfig.json'
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
 
 jobs:
   build:
@@ -18,8 +21,8 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: 'npm'
-      - run: npm ci
+          cache: npm
+      - run: npm install
       - run: npm run build
       - uses: stefanzweifel/git-auto-commit-action@v5
         with:
