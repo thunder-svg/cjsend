@@ -22,9 +22,12 @@ jobs:
         with:
           node-version: 20
           cache: npm
-      - run: npm install
+      - name: Install deps
+        run: if [ -f package-lock.json ]; then npm ci; else npm install; fi
       - run: npm run build
       - uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: 'build: vite output [skip ci]'
-          file_pattern: docs/**
+          file_pattern: |
+            package-lock.json
+            docs/**
