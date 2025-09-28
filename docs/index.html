@@ -1,13 +1,3 @@
-<!--
-Thunder Compare v1
-- Single-file frontend with side-by-side Summoner compare
-- Works with the Cloudflare Worker below
-- Replace your current index.html with this file
-- Set API_BASE to your workers.dev URL
-- Default platform: kr
-- Dark/Light auto theme
-- Event delegation and robust error handling
--->
 <!doctype html>
 <html lang="ko">
 <head>
@@ -18,7 +8,7 @@ Thunder Compare v1
   <style>
     :root{--bg:#0b0b0c;--fg:#e7e7ea;--muted:#9aa0a6;--card:#151518;--acc:#6ea8fe;--ok:#2ecc71;--bad:#ff6b6b;--warn:#f0ad4e;--line:#242428}
     @media (prefers-color-scheme: light){:root{--bg:#f8f9fb;--fg:#0b0b0c;--muted:#60646c;--card:#ffffff;--acc:#1256d6;--ok:#1a8f4d;--bad:#d63a3a;--warn:#b86e00;--line:#e8e8ef}}
-    *{box-sizing:border-box}html,body{height:100%}body{margin:0;font:14px/1.45 system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, Apple SD Gothic Neo, Noto Sans KR, sans-serif;background:var(--bg);color:var(--fg)}
+    *{box-sizing:border-box}html,body{height:100%}body{margin:0;font:14px/1.45 system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,Apple SD Gothic Neo,Noto Sans KR,sans-serif;background:var(--bg);color:var(--fg)}
     a{color:var(--acc);text-decoration:none}a:hover{text-decoration:underline}
     .wrap{max-width:1100px;margin:0 auto;padding:24px}
     header{display:flex;align-items:center;gap:12px;margin-bottom:16px}
@@ -46,9 +36,9 @@ Thunder Compare v1
     .sp{flex:1}
     .toast{position:fixed;right:12px;bottom:12px;background:var(--card);border:1px solid var(--line);padding:10px 12px;border-radius:10px}
     footer{margin-top:24px;color:var(--muted);font-size:12px}
-    @media (max-width:900px){.row{grid-template-columns:1fr;}.grid{grid-template-columns:1fr}.kpis{grid-template-columns:repeat(2,1fr)}}
+    @media (max-width:900px){.row{grid-template-columns:1fr}.grid{grid-template-columns:1fr}.kpis{grid-template-columns:repeat(2,1fr)}}
   </style>
-  <script type="module" crossorigin src="/cjsend/assets/index-DXSZ82bw.js"></script>
+  <script type="module" crossorigin src="/cjsend/assets/index-7TwmjpbZ.js"></script>
 </head>
 <body>
   <div class="wrap">
@@ -57,6 +47,7 @@ Thunder Compare v1
       <div class="sp"></div>
       <button id="share" title="현재 비교 링크 복사">링크복사</button>
     </header>
+
     <section class="bar">
       <div class="row">
         <input id="idA" type="text" placeholder="소환사A Riot ID (예: Hide on bush#KR1)" autocomplete="off" />
@@ -81,13 +72,13 @@ Thunder Compare v1
         </select>
         <button id="compare" class="primary">비교하기</button>
       </div>
-      <div class="hint">형식: <code>게임명#태그</code>. 예: <code>Faker#KR1</code>. 플랫폼은 KR 기본. 최근 10게임 기준 요약.</div>
+      <div class="hint">형식: <code>게임명#태그</code>. 예: <code>Faker#KR1</code>. 최근 10게임 기준 요약.</div>
     </section>
 
     <section id="result" class="grid" aria-live="polite"></section>
 
     <footer>
-      <div>v2025-09-28 • 캐시 5분 • 오류 발생 시 새로고침. Worker와 ORIGIN이 일치해야 함.</div>
+      <div>v2025-09-28 • 캐시 5분 • Worker CORS_ORIGIN은 GitHub Pages 호스트와 동일해야 함.</div>
     </footer>
   </div>
 
