@@ -59,7 +59,6 @@ function init() {
       setMsg(`완료 · ${dt}ms${data?.cached ? " · cache" : ""}`);
       print(data);
 
-      // matches fetch
       const mres = await fetch(`${API_BASE}/matches?riotId=${encodeURIComponent(riotId)}&count=10`);
       const mdata: any = await mres.json().catch(() => ({}));
       if (mres.ok && Array.isArray(mdata.matches)) {
@@ -110,4 +109,12 @@ function init() {
   ipt.addEventListener("keydown", (e) => { if (e.key === "Enter") e.preventDefault(); });
 
   const q = new URLSearchParams(location.search);
-  const preset = q.get("riotId") || q.get("q") || localStorage.getItem("thunder
+  const preset =
+    q.get("riotId") || q.get("q") || localStorage.getItem("thunder:lastRiotId") || "";
+  if (ipt && preset) ipt.value = preset;
+  if (preset) submit();
+}
+
+document.readyState === "loading"
+  ? document.addEventListener("DOMContentLoaded", init)
+  : init();
