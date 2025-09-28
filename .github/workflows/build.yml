@@ -1,9 +1,12 @@
-name: Vite build to docs
+name: Build to docs
+
 on:
   push:
-    branches: [main]
-  workflow_dispatch: {}
-permissions: { contents: write }
+    branches: [ main ]
+  workflow_dispatch:
+
+permissions:
+  contents: write
 
 jobs:
   build:
@@ -11,18 +14,15 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
-        with: { node-version: 20 }
-      - name: Install deps
-        run: npm install
-      - name: Build
-        run: npm run build
-      - name: Show tree
-        run: |
-          echo "== repo root =="; ls -la
-          echo "== docs =="; ls -la docs || true
-      - uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          commit_message: 'build: vite output [skip ci]'
-          file_pattern: |
-            package-lock.json
-            docs/**
+          node-version: 20
+          cache: 'npm'
+      - run: npm ci
+      - run: npm run build
+      - name: Commit built files to docs
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          git add -A docs
+          git commit -m "chore: build to docs" || echo "No changes"
+          git push
