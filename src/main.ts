@@ -4,18 +4,48 @@ const API_BASE =
   (import.meta as any).env?.VITE_API_BASE?.replace(/\/+$/, "") ||
   "https://yee.mfleon32.workers.dev";
 
+type MatchRow = {
+  win: boolean; k: number; d: number; a: number;
+  cs: number; duration: number; champion: string; queue: string;
+};
+
 function render() {
   const root = document.querySelector<HTMLDivElement>("#app");
   if (!root) return;
   root.innerHTML = `
-    <main style="max-width:880px;margin:24px auto;padding:16px">
+    <main style="max-width:980px;margin:24px auto;padding:16px">
       <h1 style="margin:0 0 12px">Thunder</h1>
-      <form id="searchForm" style="display:flex;gap:8px;align-items:center">
-        <input id="riotId" placeholder="GameName#TagLine" autocomplete="off" style="flex:1;padding:8px;border:1px solid #ccc;border-radius:6px"/>
-        <button id="searchBtn" type="submit" style="padding:8px 12px;border:1px solid #ccc;border-radius:6px;cursor:pointer">검색</button>
+
+      <form id="searchForm" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+        <input id="riotId" placeholder="GameName#TagLine" autocomplete="off"
+               style="flex:1;min-width:260px;padding:8px;border:1px solid #ccc;border-radius:6px"/>
+        <select id="platform" style="padding:8px;border:1px solid #ccc;border-radius:6px">
+          <option value="kr">kr</option>
+          <option value="na1">na1</option>
+          <option value="euw1">euw1</option>
+          <option value="eun1">eun1</option>
+          <option value="jp1">jp1</option>
+          <option value="oc1">oc1</option>
+        </select>
+        <button id="searchBtn" type="submit"
+                style="padding:8px 12px;border:1px solid #ccc;border-radius:6px;cursor:pointer">검색</button>
       </form>
+
       <p id="msg" role="status" style="min-height:1.2em;margin:12px 0 0"></p>
       <pre id="out" style="white-space:pre-wrap;overflow:auto;border:1px solid #eee;border-radius:8px;padding:12px;margin-top:8px"></pre>
+
+      <section id="summarySec" style="margin-top:16px">
+        <h2 style="font-size:18px;margin:0 0 8px">요약</h2>
+        <div id="stats" style="display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px">
+          ${["경기", "승률", "평균 K/D/A", "평균 KDA", "평균 CS", "평균 길이"].map(l =>
+            `<div style="border:1px solid #444;border-radius:8px;padding:10px">
+               <div style="opacity:.7;font-size:12px">${l}</div>
+               <div id="stat-${encodeURIComponent(l)}" style="font-weight:600;margin-top:4px">-</div>
+             </div>`
+          ).join("")}
+        </div>
+      </section>
+
       <section id="matchesSec" style="margin-top:16px">
         <h2 style="font-size:18px;margin:0 0 8px">최근 경기</h2>
         <div id="matches"></div>
@@ -31,7 +61,12 @@ function init() {
   const ipt = document.getElementById("riotId") as HTMLInputElement;
   const form = document.getElementById("searchForm") as HTMLFormElement;
   const btn = document.getElementById("searchBtn") as HTMLButtonElement;
+  const platSel = document.getElementById("platform") as HTMLSelectElement;
   const matchesBox = document.getElementById("matches") as HTMLDivElement;
+
+  // 초기 플랫폼 복원
+  const savedPlat = localStorage.getItem("thunder:platform") || "kr";
+  if ([...platSel.options].some(o => o.value === savedPlat)) platSel.value = savedPlat;
 
   const setMsg = (t: string) => (msg.textContent = t);
   const print = (v: unknown) =>
@@ -39,17 +74,18 @@ function init() {
 
   let inflight: AbortController | null = null;
 
-  async function search(riotId: string) {
+  async function search(riotId: string, platform: string) {
     inflight?.abort();
     inflight = new AbortController();
 
     setMsg("조회 중");
     print("");
     matchesBox.innerHTML = "";
+    fillSummary(null);
     btn.disabled = true;
 
     const t0 = performance.now();
-    const url = `${API_BASE}/summoner?riotId=${encodeURIComponent(riotId)}`;
+    const url = `${API_BASE}/summoner?riotId=${encodeURIComponent(riotId)}&platform=${platform}`;
 
     try {
       const res = await fetch(url, { signal: inflight.signal, headers: { Accept: "application/json" } });
@@ -59,10 +95,11 @@ function init() {
       setMsg(`완료 · ${dt}ms${data?.cached ? " · cache" : ""}`);
       print(data);
 
-      const mres = await fetch(`${API_BASE}/matches?riotId=${encodeURIComponent(riotId)}&count=10`);
+      const mres = await fetch(`${API_BASE}/matches?riotId=${encodeURIComponent(riotId)}&platform=${platform}&count=10`);
       const mdata: any = await mres.json().catch(() => ({}));
       if (mres.ok && Array.isArray(mdata.matches)) {
         matchesBox.innerHTML = toTable(mdata.matches);
+        fillSummary(mdata.matches);
       } else {
         matchesBox.textContent = `경기 불러오기 실패 ${mres.status}`;
       }
@@ -73,6 +110,34 @@ function init() {
     } finally {
       btn.disabled = false;
     }
+  }
+
+  function fillSummary(rows: MatchRow[] | null) {
+    const q = (id: string) => document.getElementById(`stat-${encodeURIComponent(id)}`)!;
+    if (!rows || rows.length === 0) {
+      ["경기","승률","평균 K/D/A","평균 KDA","평균 CS","평균 길이"].forEach(k => q(k).textContent = "-");
+      return;
+    }
+    const n = rows.length;
+    const wins = rows.filter(r => r.win).length;
+    const kills = rows.reduce((s,r)=>s+r.k,0);
+    const deaths = rows.reduce((s,r)=>s+r.d,0);
+    const assists = rows.reduce((s,r)=>s+r.a,0);
+    const cs = rows.reduce((s,r)=>s+r.cs,0);
+    const dur = rows.reduce((s,r)=>s+r.duration,0);
+
+    const wr = (wins*100/n).toFixed(1) + "%";
+    const kdastr = `${(kills/n).toFixed(1)}/${(deaths/n).toFixed(1)}/${(assists/n).toFixed(1)}`;
+    const kda = deaths ? ((kills+assists)/deaths).toFixed(2) : "Perfect";
+    const avCs = (cs/n).toFixed(1);
+    const avMin = Math.round(dur/n/60) + "m";
+
+    q("경기").textContent = String(n);
+    q("승률").textContent = wr;
+    q("평균 K/D/A").textContent = kdastr;
+    q("평균 KDA").textContent = kda;
+    q("평균 CS").textContent = avCs;
+    q("평균 길이").textContent = avMin;
   }
 
   function toTable(rows: any[]) {
@@ -100,9 +165,11 @@ function init() {
 
   function submit() {
     const v = (ipt?.value || "").trim();
+    const platform = platSel.value;
     if (!v.includes("#")) { setMsg("형식: GameName#TagLine"); return; }
     localStorage.setItem("thunder:lastRiotId", v);
-    search(v);
+    localStorage.setItem("thunder:platform", platform);
+    search(v, platform);
   }
 
   form.addEventListener("submit", (e) => { e.preventDefault(); submit(); });
