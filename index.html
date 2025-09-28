@@ -11,60 +11,218 @@ Thunder Compare v1
 <!doctype html>
 <html lang="ko">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Thunder • 전적 비교</title>
-<meta name="color-scheme" content="light dark">
-<style>
-:root{--bg:#0b0b0c;--fg:#e7e7ea;--muted:#9aa0a6;--card:#151518;--acc:#6ea8fe;--ok:#2ecc71;--bad:#ff6b6b;--warn:#f0ad4e;--line:#242428}
-@media (prefers-color-scheme: light){:root{--bg:#f8f9fb;--fg:#0b0b0c;--muted:#60646c;--card:#ffffff;--acc:#1256d6;--ok:#1a8f4d;--bad:#d63a3a;--warn:#b86e00;--line:#e8e8ef}}
-*{box-sizing:border-box}html,body{height:100%}body{margin:0;font:14px/1.45 system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, Apple SD Gothic Neo, Noto Sans KR, sans-serif;background:var(--bg);color:var(--fg)}
-a{color:var(--acc);text-decoration:none}a:hover{text-decoration:underline}
-.wrap{max-width:1100px;margin:0 auto;padding:24px}
-header{display:flex;align-items:center;gap:12px;margin-bottom:16px}
-.logo{font-weight:700;font-size:18px}
-.bar{display:grid;gap:8px;background:var(--card);border:1px solid var(--line);padding:12px;border-radius:12px}
-.row{display:grid;grid-template-columns:1fr 1fr auto auto;gap:8px}
-input[type=text]{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:transparent;color:var(--fg)}
-select,button{padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--fg);cursor:pointer}
-button.primary{background:var(--acc);border-color:var(--acc);color:#fff}
-button:disabled{opacity:.6;cursor:not-allowed}
-.hint{color:var(--muted);font-size:12px}
-.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px}
-.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px}
-.title{font-weight:700;margin-bottom:8px}
-.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
-.kpi{border:1px solid var(--line);border-radius:10px;padding:10px;text-align:center}
-.kpi .val{font-weight:700;font-size:16px}
-.vs{display:flex;align-items:center;justify-content:center;font-weight:800}
-.table{width:100%;border-collapse:collapse;border:1px solid var(--line);border-radius:10px;overflow:hidden}
-.table th,.table td{padding:10px;border-bottom:1px solid var(--line);text-align:center}
-.table th{background:rgba(127,127,127,.08)}
-.pill{display:inline-block;padding:2px 8px;border-radius:999px;border:1px solid var(--line);font-size:12px}
-.ok{color:var(--ok)}.bad{color:var(--bad)}.warn{color:var(--warn)}
-.flex{display:flex;gap:8px;align-items:center}
-.sp{flex:1}
-.toast{position:fixed;right:12px;bottom:12px;background:var(--card);border:1px solid var(--line);padding:10px 12px;border-radius:10px}
-footer{margin-top:24px;color:var(--muted);font-size:12px}
-@media (max-width:900px){.row{grid-template-columns:1fr;}.grid{grid-template-columns:1fr}.kpis{grid-template-columns:repeat(2,1fr)}}
-</style>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Thunder • 전적 비교</title>
+  <meta name="color-scheme" content="light dark">
+  <style>
+    :root{--bg:#0b0b0c;--fg:#e7e7ea;--muted:#9aa0a6;--card:#151518;--acc:#6ea8fe;--ok:#2ecc71;--bad:#ff6b6b;--warn:#f0ad4e;--line:#242428}
+    @media (prefers-color-scheme: light){:root{--bg:#f8f9fb;--fg:#0b0b0c;--muted:#60646c;--card:#ffffff;--acc:#1256d6;--ok:#1a8f4d;--bad:#d63a3a;--warn:#b86e00;--line:#e8e8ef}}
+    *{box-sizing:border-box}html,body{height:100%}body{margin:0;font:14px/1.45 system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, Apple SD Gothic Neo, Noto Sans KR, sans-serif;background:var(--bg);color:var(--fg)}
+    a{color:var(--acc);text-decoration:none}a:hover{text-decoration:underline}
+    .wrap{max-width:1100px;margin:0 auto;padding:24px}
+    header{display:flex;align-items:center;gap:12px;margin-bottom:16px}
+    .logo{font-weight:700;font-size:18px}
+    .bar{display:grid;gap:8px;background:var(--card);border:1px solid var(--line);padding:12px;border-radius:12px}
+    .row{display:grid;grid-template-columns:1fr 1fr auto auto;gap:8px}
+    input[type=text]{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:transparent;color:var(--fg)}
+    select,button{padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--fg);cursor:pointer}
+    button.primary{background:var(--acc);border-color:var(--acc);color:#fff}
+    button:disabled{opacity:.6;cursor:not-allowed}
+    .hint{color:var(--muted);font-size:12px}
+    .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px}
+    .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px}
+    .title{font-weight:700;margin-bottom:8px}
+    .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+    .kpi{border:1px solid var(--line);border-radius:10px;padding:10px;text-align:center}
+    .kpi .val{font-weight:700;font-size:16px}
+    .vs{display:flex;align-items:center;justify-content:center;font-weight:800}
+    .table{width:100%;border-collapse:collapse;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+    .table th,.table td{padding:10px;border-bottom:1px solid var(--line);text-align:center}
+    .table th{background:rgba(127,127,127,.08)}
+    .pill{display:inline-block;padding:2px 8px;border-radius:999px;border:1px solid var(--line);font-size:12px}
+    .ok{color:var(--ok)}.bad{color:var(--bad)}.warn{color:var(--warn)}
+    .flex{display:flex;gap:8px;align-items:center}
+    .sp{flex:1}
+    .toast{position:fixed;right:12px;bottom:12px;background:var(--card);border:1px solid var(--line);padding:10px 12px;border-radius:10px}
+    footer{margin-top:24px;color:var(--muted);font-size:12px}
+    @media (max-width:900px){.row{grid-template-columns:1fr;}.grid{grid-template-columns:1fr}.kpis{grid-template-columns:repeat(2,1fr)}}
+  </style>
 </head>
 <body>
-<div class="wrap">
-<header>
-<div class="logo">⚡ Thunder 전적 비교</div>
-<div class="sp"></div>
-<button id="share" title="현재 비교 링크 복사">링크복사</button>
-</header>
-<section class="bar">
-<div class="row">
-<input id="idA" type="text" placeholder="소환사A Riot ID (예: Hide on bush#KR1)" autocomplete="off" />
-<input id="idB" type="text" placeholder="소환사B Riot ID (예: Faker#KR1)" autocomplete="off" />
-<select id="platform" aria-label="플랫폼">
-<option value="kr" selected>KR</option>
-<option value="jp1">JP</option>
-<option value="euw1">EUW</option>
-<option value="eun1">EUNE</option>
-<option value="na1">NA</option>
-<option value="br1">BR</option>
-<option value="la1">LAN</option>
+  <div class="wrap">
+    <header>
+      <div class="logo">⚡ Thunder 전적 비교</div>
+      <div class="sp"></div>
+      <button id="share" title="현재 비교 링크 복사">링크복사</button>
+    </header>
+    <section class="bar">
+      <div class="row">
+        <input id="idA" type="text" placeholder="소환사A Riot ID (예: Hide on bush#KR1)" autocomplete="off" />
+        <input id="idB" type="text" placeholder="소환사B Riot ID (예: Faker#KR1)" autocomplete="off" />
+        <select id="platform" aria-label="플랫폼">
+          <option value="kr" selected>KR</option>
+          <option value="jp1">JP</option>
+          <option value="euw1">EUW</option>
+          <option value="eun1">EUNE</option>
+          <option value="na1">NA</option>
+          <option value="br1">BR</option>
+          <option value="la1">LAN</option>
+          <option value="la2">LAS</option>
+          <option value="tr1">TR</option>
+          <option value="ru">RU</option>
+          <option value="oc1">OCE</option>
+          <option value="ph2">PH</option>
+          <option value="sg2">SG</option>
+          <option value="th2">TH</option>
+          <option value="tw2">TW</option>
+          <option value="vn2">VN</option>
+        </select>
+        <button id="compare" class="primary">비교하기</button>
+      </div>
+      <div class="hint">형식: <code>게임명#태그</code>. 예: <code>Faker#KR1</code>. 플랫폼은 KR 기본. 최근 10게임 기준 요약.</div>
+    </section>
+
+    <section id="result" class="grid" aria-live="polite"></section>
+
+    <footer>
+      <div>v2025-09-28 • 캐시 5분 • 오류 발생 시 새로고침. Worker와 ORIGIN이 일치해야 함.</div>
+    </footer>
+  </div>
+
+  <div id="toast" class="toast" hidden></div>
+
+  <script type="module">
+    // ====== CONFIG ======
+    const API_BASE = "https://<YOUR-WORKER>.workers.dev"; // ← workers.dev 도메인으로 교체
+    const DEFAULT_COUNT = 10;
+
+    // ====== UTIL ======
+    const $ = (s, el=document) => el.querySelector(s);
+    const showToast = (msg) => { const el = $('#toast'); el.textContent = msg; el.hidden = false; setTimeout(()=>el.hidden=true, 3500) };
+    const parseRiotId = (s) => {
+      if (!s) return null;
+      const t = s.trim();
+      const i = t.indexOf('#');
+      if (i < 1) return null;
+      const gameName = t.slice(0, i).trim();
+      const tagLine = t.slice(i+1).trim();
+      if (!/^[A-Za-z0-9]{2,5}$/.test(tagLine)) return null;
+      return { gameName, tagLine, riotId: `${gameName}#${tagLine}` };
+    };
+    const pct = (n) => (n*100).toFixed(1) + '%';
+    const fmt = (n, d=1) => Number(n||0).toFixed(d);
+
+    // ====== API ======
+    async function loadProfile(riotId, platform, count=DEFAULT_COUNT){
+      const url = new URL(API_BASE + "/v1/profile");
+      url.searchParams.set('riotId', riotId);
+      url.searchParams.set('platform', platform);
+      url.searchParams.set('count', String(count));
+      const r = await fetch(url, { headers: { 'Accept':'application/json' } });
+      if (!r.ok) throw new Error(`API ${r.status}`);
+      return await r.json();
+    }
+
+    // ====== RENDER ======
+    function kpi(label, val, cls=''){
+      return `<div class="kpi"><div class="val ${cls}">${val}</div><div class="hint">${label}</div></div>`
+    }
+
+    function renderSide(p){
+      const r = p.recent?.summary || {wins:0,losses:0,kills:0,deaths:0,assists:0,avgCS:0};
+      const games = r.wins + r.losses;
+      const wr = games? pct(r.wins/games):'0%';
+      const kda = r.deaths? fmt((r.kills+r.assists)/r.deaths,2): '∞';
+      const rankSolo = (p.ranks?.solo?.tier||'UNRANKED') + (p.ranks?.solo?.rank?(' '+p.ranks.solo.rank):'');
+      const lpSolo = p.ranks?.solo?.lp!=null? `${p.ranks.solo.lp} LP` : '';
+      return `
+        <div class="card">
+          <div class="title">${p.name || p.gameName} <span class="pill">${p.riotId}</span></div>
+          <div class="kpis">
+            ${kpi('솔로랭크', `${rankSolo} ${lpSolo}`)}
+            ${kpi('레벨', p.summoner?.summonerLevel ?? '-')}
+            ${kpi('승률', wr, (r.wins>=r.losses?'ok':'bad'))}
+            ${kpi('KDA', kda)}
+            ${kpi('평균 K', fmt(r.kills/games||0,1))}
+            ${kpi('평균 D', fmt(r.deaths/games||0,1))}
+            ${kpi('평균 A', fmt(r.assists/games||0,1))}
+            ${kpi('평균 CS', fmt(r.avgCS||0,1))}
+          </div>
+        </div>`
+    }
+
+    function renderCompare(a, b){
+      const host = $('#result');
+      host.innerHTML = '';
+      host.insertAdjacentHTML('beforeend', renderSide(a));
+      host.insertAdjacentHTML('beforeend', renderSide(b));
+
+      // Detail table below
+      const A = a.recent?.summary || {}; const B = b.recent?.summary || {};
+      const ag = (A.wins||0)+(A.losses||0)||1; const bg = (B.wins||0)+(B.losses||0)||1;
+      const rows = [
+        ['승률', pct((A.wins||0)/ag), pct((B.wins||0)/bg)],
+        ['KDA', A.deaths?fmt(((A.kills||0)+(A.assists||0))/A.deaths,2):'∞', B.deaths?fmt(((B.kills||0)+(B.assists||0))/B.deaths,2):'∞'],
+        ['평균 K/D/A', `${fmt((A.kills||0)/ag,1)} / ${fmt((A.deaths||0)/ag,1)} / ${fmt((A.assists||0)/ag,1)}`, `${fmt((B.kills||0)/bg,1)} / ${fmt((B.deaths||0)/bg,1)} / ${fmt((B.assists||0)/bg,1)}`],
+        ['평균 CS', fmt(A.avgCS||0,1), fmt(B.avgCS||0,1)],
+        ['표본 수', ag, bg],
+      ];
+      const table = document.createElement('div');
+      table.className = 'card';
+      table.innerHTML = `
+        <div class="title">상세 비교</div>
+        <table class="table">
+          <thead><tr><th>지표</th><th>${a.riotId}</th><th>${b.riotId}</th></tr></thead>
+          <tbody>
+            ${rows.map(r=>`<tr><td>${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td></tr>`).join('')}
+          </tbody>
+        </table>`;
+      host.parentElement.appendChild(table);
+    }
+
+    // ====== FLOW ======
+    async function onCompare(){
+      const aIn = parseRiotId($('#idA').value);
+      const bIn = parseRiotId($('#idB').value);
+      const platform = $('#platform').value;
+      if (!aIn || !bIn){ showToast('두 Riot ID를 모두 입력하세요. 예: Faker#KR1'); return }
+      $('#compare').disabled = true;
+      try{
+        const [A,B] = await Promise.all([
+          loadProfile(aIn.riotId, platform),
+          loadProfile(bIn.riotId, platform)
+        ]);
+        renderCompare(A,B);
+        // shareable URL
+        history.replaceState(null,'', `#compare=${encodeURIComponent(aIn.riotId)}|${encodeURIComponent(bIn.riotId)}&p=${platform}`);
+      }catch(e){
+        console.error(e); showToast('불러오기에 실패했습니다. 잠시 후 다시.');
+      }finally{ $('#compare').disabled = false }
+    }
+
+    function bootFromHash(){
+      const h = location.hash.slice(1);
+      if (!h.startsWith('compare=')) return;
+      const params = new URLSearchParams(h.replace(/^compare=/,'').replace(/&/,'&'));
+      const pair = decodeURIComponent(h.split('=')[1].split('&')[0]||'');
+      const [a,b] = pair.split('|');
+      const p = new URLSearchParams(h.split('&').slice(1).join('&')).get('p') || 'kr';
+      if (a && b){ $('#idA').value = a; $('#idB').value = b; $('#platform').value = p; onCompare(); }
+    }
+
+    // Events
+    document.addEventListener('click', (e)=>{
+      const id = e.target.id;
+      if (id==='compare') onCompare();
+      if (id==='share'){
+        try{ navigator.clipboard.writeText(location.href); showToast('링크를 복사했습니다'); }catch{ showToast('복사 실패') }
+      }
+    });
+    document.addEventListener('keydown', (e)=>{ if (e.key==='Enter') onCompare(); })
+
+    // init
+    window.addEventListener('DOMContentLoaded', bootFromHash);
+  </script>
+</body>
+</html>
