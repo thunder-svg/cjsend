@@ -5,6 +5,10 @@ on:
     branches: [ main ]
   workflow_dispatch:
 
+concurrency:
+  group: build-docs
+  cancel-in-progress: true
+
 permissions:
   contents: write
 
@@ -13,16 +17,24 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: 'npm'
       - run: npm ci
       - run: npm run build
+      - name: Place build into docs
+        run: |
+          rm -rf docs
+          if [ -d dist ]; then mv dist docs; fi
       - name: Commit built files to docs
         run: |
+          set -e
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
           git add -A docs
-          git commit -m "chore: build to docs" || echo "No changes"
-          git push
+          git commit -m "chore: build to docs [skip ci]" || exit 0
+          git pull --rebase origin main
+          git push origin HEAD:main
