@@ -25,10 +25,11 @@ jobs:
           cache: 'npm'
       - run: npm ci
       - run: npm run build
-      - name: Place build into docs
+      - name: Ensure docs exists
         run: |
-          rm -rf docs
-          if [ -d dist ]; then mv dist docs; fi
+          # Vite outDir이 dist이면 dist→docs 이동, 이미 docs로 빌드했으면 그대로 둠
+          if [ -d dist ]; then rm -rf docs && mv dist docs; fi
+          test -d docs
       - name: Commit built files to docs
         run: |
           set -e
