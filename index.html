@@ -43,7 +43,7 @@
     <header>
       <div class="logo">⚡ Thunder 전적 비교</div>
       <div class="sp"></div>
-      <button id="share" title="현재 비교 링크 복사">링크복사</button>
+      <button id="share">링크복사</button>
     </header>
 
     <section class="bar">
@@ -92,11 +92,11 @@
     const showToast = (msg) => { const el = $('#toast'); el.textContent = msg; el.hidden = false; setTimeout(()=>el.hidden=true, 3500) };
     const parseRiotId = (s) => {
       if (!s) return null;
-      const t = s.trim().replace(/\s*#\s*/, '#'); // # 주변 공백 정리
+      const t = s.trim().replace(/\s*#\s*/, '#');       // # 주변 공백 제거
       const i = t.indexOf('#');
       if (i < 1) return null;
       const gameName = t.slice(0, i).trim();
-      const tagLine = t.slice(i+1).replace(/\s+/g,'').toUpperCase(); // 내부 공백 제거
+      const tagLine = t.slice(i+1).replace(/\s+/g,'').toUpperCase(); // 내부 공백 제거 + 대문자화
       if (!/^[A-Z0-9]{2,5}$/.test(tagLine)) return null;
       return { gameName, tagLine, riotId: `${gameName}#${tagLine}` };
     };
@@ -110,7 +110,11 @@
       url.searchParams.set('platform', platform);
       url.searchParams.set('count', String(count));
       const r = await fetch(url, { headers: { 'Accept':'application/json' } });
-      if (!r.ok) throw new Error(`API ${r.status}`);
+      if (!r.ok){
+        let msg = '';
+        try{ const j = await r.json(); msg = j?.message || j?.error || '' }catch{}
+        throw new Error(`API ${r.status}${msg? ' '+msg: ''}`);
+      }
       return await r.json();
     }
 
@@ -121,8 +125,8 @@
 
     function renderSide(p){
       const r = p.recent?.summary || {wins:0,losses:0,kills:0,deaths:0,assists:0,avgCS:0};
-      const games = r.wins + r.losses || 1;
-      const wr = pct(r.wins/(r.wins+r.losses||1));
+      const games = (r.wins + r.losses) || 1;
+      const wr = pct((r.wins||0)/((r.wins||0)+(r.losses||0)||1));
       const kda = r.deaths? fmt((r.kills+r.assists)/r.deaths,2): '∞';
       const rankSolo = (p.ranks?.solo?.tier||'UNRANKED') + (p.ranks?.solo?.rank?(' '+p.ranks.solo.rank):'');
       const lpSolo = p.ranks?.solo?.lp!=null? `${p.ranks.solo.lp} LP` : '';
@@ -139,7 +143,7 @@
             ${kpi('평균 A', fmt(r.assists/games,1))}
             ${kpi('평균 CS', fmt(r.avgCS,1))}
           </div>
-        </div>`;
+        </div>`
     }
 
     function renderCompare(a, b){
@@ -185,7 +189,7 @@
         renderCompare(A,B);
         history.replaceState(null,'', `#compare=${encodeURIComponent(aIn.riotId)}|${encodeURIComponent(bIn.riotId)}&p=${platform}`);
       }catch(e){
-        console.error(e); showToast('불러오기에 실패했습니다. 잠시 후 다시.');
+        console.error(e); showToast(String(e.message||e));
       }finally{ $('#compare').disabled = false }
     }
 
