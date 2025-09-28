@@ -47,8 +47,24 @@ function render() {
       </section>
 
       <section id="matchesSec" style="margin-top:16px">
-        <h2 style="font-size:18px;margin:0 0 8px">최근 경기</h2>
-        <div id="matches"></div>
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
+          <h2 style="font-size:18px;margin:0">최근 경기</h2>
+          <div style="display:flex;gap:8px;align-items:center">
+            <label style="font-size:12px;opacity:.8">큐</label>
+            <select id="queueFilter" style="padding:6px;border:1px solid #ccc;border-radius:6px">
+              <option value="all">전체</option>
+              <option value="ranked">랭크</option>
+              <option value="aram">ARAM</option>
+              <option value="arena">Arena</option>
+              <option value="urf">URF</option>
+              <option value="normal">일반</option>
+            </select>
+            <button id="prevBtn" type="button" style="padding:6px 10px;border:1px solid #ccc;border-radius:6px;cursor:pointer">이전</button>
+            <span id="pageInfo" style="min-width:80px;text-align:center;font-size:12px;opacity:.8">-</span>
+            <button id="nextBtn" type="button" style="padding:6px 10px;border:1px solid #ccc;border-radius:6px;cursor:pointer">다음</button>
+          </div>
+        </div>
+        <div id="matches" style="margin-top:8px"></div>
       </section>
     </main>`;
 }
@@ -63,8 +79,11 @@ function init() {
   const btn = document.getElementById("searchBtn") as HTMLButtonElement;
   const platSel = document.getElementById("platform") as HTMLSelectElement;
   const matchesBox = document.getElementById("matches") as HTMLDivElement;
+  const qFilter = document.getElementById("queueFilter") as HTMLSelectElement;
+  const prevBtn = document.getElementById("prevBtn") as HTMLButtonElement;
+  const nextBtn = document.getElementById("nextBtn") as HTMLButtonElement;
+  const pageInfo = document.getElementById("pageInfo") as HTMLSpanElement;
 
-  // 초기 플랫폼 복원
   const savedPlat = localStorage.getItem("thunder:platform") || "kr";
   if ([...platSel.options].some(o => o.value === savedPlat)) platSel.value = savedPlat;
 
@@ -73,6 +92,9 @@ function init() {
     (out.textContent = typeof v === "string" ? v : JSON.stringify(v, null, 2));
 
   let inflight: AbortController | null = null;
+  let start = 0;
+  const pageSize = 10;
+  let lastRows: any[] = [];
 
   async function search(riotId: string, platform: string) {
     inflight?.abort();
@@ -83,6 +105,7 @@ function init() {
     matchesBox.innerHTML = "";
     fillSummary(null);
     btn.disabled = true;
+    start = 0;
 
     const t0 = performance.now();
     const url = `${API_BASE}/summoner?riotId=${encodeURIComponent(riotId)}&platform=${platform}`;
@@ -95,20 +118,55 @@ function init() {
       setMsg(`완료 · ${dt}ms${data?.cached ? " · cache" : ""}`);
       print(data);
 
-      const mres = await fetch(`${API_BASE}/matches?riotId=${encodeURIComponent(riotId)}&platform=${platform}&count=10`);
-      const mdata: any = await mres.json().catch(() => ({}));
-      if (mres.ok && Array.isArray(mdata.matches)) {
-        matchesBox.innerHTML = toTable(mdata.matches);
-        fillSummary(mdata.matches);
-      } else {
-        matchesBox.textContent = `경기 불러오기 실패 ${mres.status}`;
-      }
+      await loadMatches();
     } catch (err: any) {
       const aborted = err?.name === "AbortError";
       setMsg(aborted ? "타임아웃 10s" : "네트워크 오류");
       print(String(err));
     } finally {
       btn.disabled = false;
+    }
+  }
+
+  async function loadMatches() {
+    const riotId = (ipt.value || "").trim();
+    const platform = platSel.value;
+    pageInfo.textContent = `로딩…`;
+    matchesBox.innerHTML = "";
+
+    const mres = await fetch(`${API_BASE}/matches?riotId=${encodeURIComponent(riotId)}&platform=${platform}&count=${pageSize}&start=${start}`);
+    const mdata: any = await mres.json().catch(() => ({}));
+    if (!(mres.ok && Array.isArray(mdata.matches))) {
+      matchesBox.textContent = `경기 불러오기 실패 ${mres.status}`;
+      pageInfo.textContent = "-";
+      prevBtn.disabled = start === 0;
+      nextBtn.disabled = true;
+      return;
+    }
+    lastRows = mdata.matches;
+    renderMatches();
+  }
+
+  function renderMatches() {
+    const rows = applyFilter(lastRows, qFilter.value);
+    matchesBox.innerHTML = toTable(rows);
+    fillSummary(rows);
+    const page = start / pageSize + 1;
+    pageInfo.textContent = `페이지 ${page}`;
+    prevBtn.disabled = start === 0;
+    nextBtn.disabled = lastRows.length < pageSize; // 더 없으면 비활성
+  }
+
+  function applyFilter(rows: any[], f: string) {
+    if (f === "all") return rows;
+    const pick = (ids: number[]) => rows.filter(r => ids.includes(r.queueId));
+    switch (f) {
+      case "ranked": return pick([420, 440]);
+      case "aram":   return pick([450]);
+      case "arena":  return pick([1700]);
+      case "urf":    return pick([1900]);
+      case "normal": return pick([400, 430]);
+      default: return rows;
     }
   }
 
@@ -173,12 +231,15 @@ function init() {
   }
 
   form.addEventListener("submit", (e) => { e.preventDefault(); submit(); });
-  ipt.addEventListener("keydown", (e) => { if (e.key === "Enter") e.preventDefault(); });
+  (document.getElementById("queueFilter") as HTMLSelectElement)
+    .addEventListener("change", () => renderMatches());
+  prevBtn.addEventListener("click", () => { if (start >= pageSize) { start -= pageSize; loadMatches(); } });
+  nextBtn.addEventListener("click", () => { start += pageSize; loadMatches(); });
 
   const q = new URLSearchParams(location.search);
   const preset =
     q.get("riotId") || q.get("q") || localStorage.getItem("thunder:lastRiotId") || "";
-  if (ipt && preset) ipt.value = preset;
+  if (preset) ipt.value = preset;
   if (preset) submit();
 }
 
