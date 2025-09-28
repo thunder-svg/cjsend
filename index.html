@@ -3,18 +3,20 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Thunder • 전적 비교</title>
+  <title>Thunder • 전적검색 + 비교</title>
   <meta name="color-scheme" content="light dark">
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cpath d='M28 4l8 14h-8l8 14h-8l-8 14' stroke='%23fff' stroke-width='8' fill='none'/%3E%3C/svg%3E">
   <style>
     :root{--bg:#0b0b0c;--fg:#e7e7ea;--muted:#9aa0a6;--card:#151518;--acc:#6ea8fe;--ok:#2ecc71;--bad:#ff6b6b;--warn:#f0ad4e;--line:#242428}
     @media (prefers-color-scheme: light){:root{--bg:#f8f9fb;--fg:#0b0b0c;--muted:#60646c;--card:#ffffff;--acc:#1256d6;--ok:#1a8f4d;--bad:#d63a3a;--warn:#b86e00;--line:#e8e8ef}}
     *{box-sizing:border-box}html,body{height:100%}body{margin:0;font:14px/1.45 system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,Apple SD Gothic Neo,Noto Sans KR,sans-serif;background:var(--bg);color:var(--fg)}
-    a{color:var(--acc);text-decoration:none}a:hover{text-decoration:underline}
     .wrap{max-width:1100px;margin:0 auto;padding:24px}
-    header{display:flex;align-items:center;gap:12px;margin-bottom:16px}
+    header{display:flex;align-items:center;gap:12px;margin-bottom:12px}
     .logo{font-weight:700;font-size:18px}
-    .bar{display:grid;gap:8px;background:var(--card);border:1px solid var(--line);padding:12px;border-radius:12px}
+    .tabs{display:flex;gap:6px}
+    .tab{padding:8px 12px;border:1px solid var(--line);background:var(--card);border-radius:999px;cursor:pointer}
+    .tab.active{background:var(--acc);color:#fff;border-color:var(--acc)}
+    .bar{display:grid;gap:8px;background:var(--card);border:1px solid var(--line);padding:12px;border-radius:12px;margin-top:8px}
     .row{display:grid;grid-template-columns:1fr 1fr auto auto;gap:8px}
     input[type=text]{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:transparent;color:var(--fg)}
     select,button{padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--fg);cursor:pointer}
@@ -31,9 +33,7 @@
     .table th,.table td{padding:10px;border-bottom:1px solid var(--line);text-align:center}
     .table th{background:rgba(127,127,127,.08)}
     .pill{display:inline-block;padding:2px 8px;border-radius:999px;border:1px solid var(--line);font-size:12px}
-    .ok{color:var(--ok)}.bad{color:var(--bad)}.warn{color:var(--warn)}
-    .sp{flex:1}
-    .toast{position:fixed;right:12px;bottom:12px;background:var(--card);border:1px solid var(--line);padding:10px 12px;border-radius:10px}
+    .sp{flex:1}.toast{position:fixed;right:12px;bottom:12px;background:var(--card);border:1px solid var(--line);padding:10px 12px;border-radius:10px}
     footer{margin-top:24px;color:var(--muted);font-size:12px}
     @media (max-width:900px){.row{grid-template-columns:1fr}.grid{grid-template-columns:1fr}.kpis{grid-template-columns:repeat(2,1fr)}}
   </style>
@@ -41,67 +41,75 @@
 <body>
   <div class="wrap">
     <header>
-      <div class="logo">⚡ Thunder 전적 비교</div>
+      <div class="logo">⚡ Thunder 전적</div>
       <div class="sp"></div>
-      <button id="share">링크복사</button>
+      <div class="tabs" role="tablist">
+        <button id="tab-search" class="tab active" role="tab" aria-selected="true">전적검색</button>
+        <button id="tab-compare" class="tab" role="tab" aria-selected="false">비교하기</button>
+        <button id="share" title="현재 링크 복사">링크복사</button>
+      </div>
     </header>
 
-    <section class="bar">
+    <!-- 전적검색 -->
+    <section id="view-search" class="bar" role="tabpanel" aria-labelledby="tab-search">
       <div class="row">
-        <input id="idA" type="text" placeholder="소환사A Riot ID (예: Hide on bush#KR1)" autocomplete="off" />
-        <input id="idB" type="text" placeholder="소환사B Riot ID (예: Faker#KR1)" autocomplete="off" />
+        <input id="sId" type="text" placeholder="Riot ID (예: Faker#KR1)" autocomplete="off" />
+        <select id="sPlatform" aria-label="플랫폼">
+          <option value="kr" selected>KR</option><option value="jp1">JP</option><option value="euw1">EUW</option>
+          <option value="eun1">EUNE</option><option value="na1">NA</option><option value="br1">BR</option>
+          <option value="la1">LAN</option><option value="la2">LAS</option><option value="tr1">TR</option>
+          <option value="ru">RU</option><option value="oc1">OCE</option><option value="ph2">PH</option>
+          <option value="sg2">SG</option><option value="th2">TH</option><option value="tw2">TW</option><option value="vn2">VN</option>
+        </select>
+        <button id="searchBtn" class="primary">검색</button>
+      </div>
+      <div class="hint">형식: <code>게임명#태그</code>. 최근 10게임 요약과 샘플을 표시.</div>
+      <div id="sResult" class="grid" aria-live="polite" style="margin-top:12px"></div>
+    </section>
+
+    <!-- 비교하기 -->
+    <section id="view-compare" class="bar" role="tabpanel" aria-labelledby="tab-compare" hidden>
+      <div class="row">
+        <input id="idA" type="text" placeholder="소환사A (예: Hide on bush#KR1)" autocomplete="off" />
+        <input id="idB" type="text" placeholder="소환사B (예: Faker#KR1)" autocomplete="off" />
         <select id="platform" aria-label="플랫폼">
-          <option value="kr" selected>KR</option>
-          <option value="jp1">JP</option>
-          <option value="euw1">EUW</option>
-          <option value="eun1">EUNE</option>
-          <option value="na1">NA</option>
-          <option value="br1">BR</option>
-          <option value="la1">LAN</option>
-          <option value="la2">LAS</option>
-          <option value="tr1">TR</option>
-          <option value="ru">RU</option>
-          <option value="oc1">OCE</option>
-          <option value="ph2">PH</option>
-          <option value="sg2">SG</option>
-          <option value="th2">TH</option>
-          <option value="tw2">TW</option>
-          <option value="vn2">VN</option>
+          <option value="kr" selected>KR</option><option value="jp1">JP</option><option value="euw1">EUW</option>
+          <option value="eun1">EUNE</option><option value="na1">NA</option><option value="br1">BR</option>
+          <option value="la1">LAN</option><option value="la2">LAS</option><option value="tr1">TR</option>
+          <option value="ru">RU</option><option value="oc1">OCE</option><option value="ph2">PH</option>
+          <option value="sg2">SG</option><option value="th2">TH</option><option value="tw2">TW</option><option value="vn2">VN</option>
         </select>
         <button id="compare" class="primary">비교하기</button>
       </div>
-      <div class="hint">형식: <code>게임명#태그</code>. 예: <code>Faker#KR1</code>. 최근 10게임 기준 요약.</div>
+      <div class="hint">두 Riot ID 입력. 최근 10게임 기준 비교.</div>
+      <section id="cResult" class="grid" aria-live="polite" style="margin-top:12px"></section>
     </section>
 
-    <section id="result" class="grid" aria-live="polite"></section>
-
-    <footer>
-      <div>v2025-09-28 • 캐시 5분 • Worker CORS_ORIGIN은 GitHub Pages 호스트와 동일해야 함.</div>
-    </footer>
+    <footer><div>v2025-09-28 • 캐시 5분 • Worker CORS_ORIGIN=GitHub Pages 호스트</div></footer>
   </div>
 
   <div id="toast" class="toast" hidden></div>
 
   <script type="module">
     // ====== CONFIG ======
-    const API_BASE = "https://yee.mfleon32.workers.dev"; // 끝 슬래시 금지
+    const API_BASE = "https://yee.mfleon32.workers.dev"; // 네 워커 도메인. 끝 슬래시 금지.
     const DEFAULT_COUNT = 10;
 
     // ====== UTIL ======
     const $ = (s, el=document) => el.querySelector(s);
-    const showToast = (msg) => { const el = $('#toast'); el.textContent = msg; el.hidden = false; setTimeout(()=>el.hidden=true, 3500) };
+    const showToast = (m) => { const el=$('#toast'); el.textContent=m; el.hidden=false; setTimeout(()=>el.hidden=true, 3500) };
     const parseRiotId = (s) => {
       if (!s) return null;
-      const t = s.trim().replace(/\s*#\s*/, '#');       // # 주변 공백 제거
-      const i = t.indexOf('#');
-      if (i < 1) return null;
+      const t = s.trim().replace(/\s*#\s*/, '#');
+      const i = t.indexOf('#'); if (i < 1) return null;
       const gameName = t.slice(0, i).trim();
-      const tagLine = t.slice(i+1).replace(/\s+/g,'').toUpperCase(); // 내부 공백 제거 + 대문자화
+      const tagLine = t.slice(i+1).replace(/\s+/g,'').toUpperCase();
       if (!/^[A-Z0-9]{2,5}$/.test(tagLine)) return null;
       return { gameName, tagLine, riotId: `${gameName}#${tagLine}` };
     };
-    const pct = (n) => (n*100).toFixed(1) + '%';
+    const pct = (n) => (n*100).toFixed(1)+'%';
     const fmt = (n, d=1) => Number(n||0).toFixed(d);
+    const dur = (sec=0) => { const m=Math.floor(sec/60), s=Math.floor(sec%60); return `${m}:${String(s).padStart(2,'0')}` };
 
     // ====== API ======
     async function loadProfile(riotId, platform, count=DEFAULT_COUNT){
@@ -111,105 +119,124 @@
       url.searchParams.set('count', String(count));
       const r = await fetch(url, { headers: { 'Accept':'application/json' } });
       if (!r.ok){
-        let msg = '';
-        try{ const j = await r.json(); msg = j?.message || j?.error || '' }catch{}
-        throw new Error(`API ${r.status}${msg? ' '+msg: ''}`);
+        let msg=''; try{ const j=await r.json(); msg=j?.message||j?.error||'' }catch{}
+        throw new Error(`API ${r.status}${msg? ' '+msg:''}`);
       }
-      return await r.json();
+      return r.json();
     }
 
     // ====== RENDER ======
-    function kpi(label, val, cls=''){
-      return `<div class="kpi"><div class="val ${cls}">${val}</div><div class="hint">${label}</div></div>`
+    const kpi = (label,val,cls='') => `<div class="kpi"><div class="val ${cls}">${val}</div><div class="hint">${label}</div></div>`;
+    function sideCard(p){
+      const r=p.recent?.summary||{wins:0,losses:0,kills:0,deaths:0,assists:0,avgCS:0};
+      const games=(r.wins+r.losses)||1;
+      const wr=pct((r.wins||0)/((r.wins||0)+(r.losses||0)||1));
+      const kda=r.deaths?fmt((r.kills+r.assists)/r.deaths,2):'∞';
+      const rankSolo=(p.ranks?.solo?.tier||'UNRANKED')+(p.ranks?.solo?.rank?(' '+p.ranks.solo.rank):'');
+      const lpSolo=p.ranks?.solo?.lp!=null?`${p.ranks.solo.lp} LP`:'';
+      return `<div class="card">
+        <div class="title">${p.name||p.gameName} <span class="pill">${p.riotId}</span></div>
+        <div class="kpis">
+          ${kpi('솔로랭크',`${rankSolo} ${lpSolo}`)}
+          ${kpi('레벨',p.summoner?.summonerLevel??'-')}
+          ${kpi('승률',wr,(r.wins>=r.losses?'ok':'bad'))}
+          ${kpi('KDA',kda)}
+          ${kpi('평균 K',fmt(r.kills/games,1))}
+          ${kpi('평균 D',fmt(r.deaths/games,1))}
+          ${kpi('평균 A',fmt(r.assists/games,1))}
+          ${kpi('평균 CS',fmt(r.avgCS,1))}
+        </div></div>`;
     }
-
-    function renderSide(p){
-      const r = p.recent?.summary || {wins:0,losses:0,kills:0,deaths:0,assists:0,avgCS:0};
-      const games = (r.wins + r.losses) || 1;
-      const wr = pct((r.wins||0)/((r.wins||0)+(r.losses||0)||1));
-      const kda = r.deaths? fmt((r.kills+r.assists)/r.deaths,2): '∞';
-      const rankSolo = (p.ranks?.solo?.tier||'UNRANKED') + (p.ranks?.solo?.rank?(' '+p.ranks.solo.rank):'');
-      const lpSolo = p.ranks?.solo?.lp!=null? `${p.ranks.solo.lp} LP` : '';
-      return `
-        <div class="card">
-          <div class="title">${p.name || p.gameName} <span class="pill">${p.riotId}</span></div>
-          <div class="kpis">
-            ${kpi('솔로랭크', `${rankSolo} ${lpSolo}`)}
-            ${kpi('레벨', p.summoner?.summonerLevel ?? '-')}
-            ${kpi('승률', wr, (r.wins>=r.losses?'ok':'bad'))}
-            ${kpi('KDA', kda)}
-            ${kpi('평균 K', fmt(r.kills/games,1))}
-            ${kpi('평균 D', fmt(r.deaths/games,1))}
-            ${kpi('평균 A', fmt(r.assists/games,1))}
-            ${kpi('평균 CS', fmt(r.avgCS,1))}
-          </div>
-        </div>`
+    function matchesTable(p){
+      const rows=(p.recent?.sample||[]).map(m=>`<tr>
+        <td>${m.matchId}</td><td>${m.win?'W':'L'}</td><td>${m.k}/${m.d}/${m.a}</td><td>${m.cs}</td><td>${dur(m.dur)}</td>
+      </tr>`).join('');
+      return `<div class="card">
+        <div class="title">최근 경기 샘플</div>
+        <table class="table"><thead><tr><th>매치ID</th><th>결과</th><th>K/D/A</th><th>CS</th><th>시간</th></tr></thead>
+        <tbody>${rows||'<tr><td colspan="5">데이터 없음</td></tr>'}</tbody></table>
+      </div>`;
     }
-
-    function renderCompare(a, b){
-      const host = $('#result');
-      host.innerHTML = '';
-      host.insertAdjacentHTML('beforeend', renderSide(a));
-      host.insertAdjacentHTML('beforeend', renderSide(b));
-
-      const A = a.recent?.summary || {}, B = b.recent?.summary || {};
-      const ag = (A.wins||0)+(A.losses||0)||1, bg = (B.wins||0)+(B.losses||0)||1;
-      const rows = [
-        ['승률', pct((A.wins||0)/ag), pct((B.wins||0)/bg)],
-        ['KDA', A.deaths?fmt(((A.kills||0)+(A.assists||0))/A.deaths,2):'∞', B.deaths?fmt(((B.kills||0)+(B.assists||0))/B.deaths,2):'∞'],
-        ['평균 K/D/A', `${fmt((A.kills||0)/ag,1)} / ${fmt((A.deaths||0)/ag,1)} / ${fmt((A.assists||0)/ag,1)}`, `${fmt((B.kills||0)/bg,1)} / ${fmt((B.deaths||0)/bg,1)} / ${fmt((B.assists||0)/bg,1)}`],
-        ['평균 CS', fmt(A.avgCS||0,1), fmt(B.avgCS||0,1)],
-        ['표본 수', ag, bg],
+    function renderSearch(p){
+      const host=$('#sResult'); host.innerHTML='';
+      host.insertAdjacentHTML('beforeend', sideCard(p));
+      host.insertAdjacentHTML('beforeend', matchesTable(p));
+    }
+    function renderCompare(a,b){
+      const host=$('#cResult'); host.innerHTML='';
+      host.insertAdjacentHTML('beforeend', sideCard(a));
+      host.insertAdjacentHTML('beforeend', sideCard(b));
+      const A=a.recent?.summary||{}, B=b.recent?.summary||{};
+      const ag=(A.wins||0)+(A.losses||0)||1, bg=(B.wins||0)+(B.losses||0)||1;
+      const rows=[
+        ['승률',pct((A.wins||0)/ag),pct((B.wins||0)/bg)],
+        ['KDA',A.deaths?fmt(((A.kills||0)+(A.assists||0))/A.deaths,2):'∞',B.deaths?fmt(((B.kills||0)+(B.assists||0))/B.deaths,2):'∞'],
+        ['평균 K/D/A',`${fmt((A.kills||0)/ag,1)} / ${fmt((A.deaths||0)/ag,1)} / ${fmt((A.assists||0)/ag,1)}`,`${fmt((B.kills||0)/bg,1)} / ${fmt((B.deaths||0)/bg,1)} / ${fmt((B.assists||0)/bg,1)}`],
+        ['평균 CS',fmt(A.avgCS||0,1),fmt(B.avgCS||0,1)],
+        ['표본 수',ag,bg],
       ];
-      const table = document.createElement('div');
-      table.className = 'card';
-      table.innerHTML = `
-        <div class="title">상세 비교</div>
-        <table class="table">
-          <thead><tr><th>지표</th><th>${a.riotId}</th><th>${b.riotId}</th></tr></thead>
-          <tbody>
-            ${rows.map(r=>`<tr><td>${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td></tr>`).join('')}
-          </tbody>
-        </table>`;
+      const table=document.createElement('div'); table.className='card';
+      table.innerHTML=`<div class="title">상세 비교</div>
+        <table class="table"><thead><tr><th>지표</th><th>${a.riotId}</th><th>${b.riotId}</th></tr></thead>
+        <tbody>${rows.map(r=>`<tr><td>${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td></tr>`).join('')}</tbody></table>`;
       host.parentElement.appendChild(table);
     }
 
-    // ====== FLOW ======
-    async function onCompare(){
-      const aIn = parseRiotId($('#idA').value);
-      const bIn = parseRiotId($('#idB').value);
-      const platform = $('#platform').value;
-      if (!aIn || !bIn){ showToast('두 Riot ID를 모두 입력하세요. 예: Faker#KR1'); return }
-      $('#compare').disabled = true;
+    // ====== ACTIONS ======
+    async function doSearch(){
+      const id=parseRiotId($('#sId').value), p=$('#sPlatform').value;
+      if(!id){ showToast('Riot ID 형식 오류. 예: Faker#KR1'); return }
+      $('#searchBtn').disabled=true;
       try{
-        const [A,B] = await Promise.all([
-          loadProfile(aIn.riotId, platform),
-          loadProfile(bIn.riotId, platform)
-        ]);
+        const P=await loadProfile(id.riotId,p);
+        renderSearch(P);
+        history.replaceState(null,'',`#search=${encodeURIComponent(id.riotId)}&p=${p}`);
+      }catch(e){ console.error(e); showToast(String(e.message||e)); }
+      finally{ $('#searchBtn').disabled=false }
+    }
+    async function doCompare(){
+      const a=parseRiotId($('#idA').value), b=parseRiotId($('#idB').value), p=$('#platform').value;
+      if(!a||!b){ showToast('두 Riot ID를 모두 입력'); return }
+      $('#compare').disabled=true;
+      try{
+        const [A,B]=await Promise.all([loadProfile(a.riotId,p),loadProfile(b.riotId,p)]);
         renderCompare(A,B);
-        history.replaceState(null,'', `#compare=${encodeURIComponent(aIn.riotId)}|${encodeURIComponent(bIn.riotId)}&p=${platform}`);
-      }catch(e){
-        console.error(e); showToast(String(e.message||e));
-      }finally{ $('#compare').disabled = false }
+        history.replaceState(null,'',`#compare=${encodeURIComponent(a.riotId)}|${encodeURIComponent(b.riotId)}&p=${p}`);
+      }catch(e){ console.error(e); showToast(String(e.message||e)); }
+      finally{ $('#compare').disabled=false }
     }
 
+    // ====== NAV ======
+    function switchTab(name){
+      const isSearch=name==='search';
+      $('#view-search').hidden=!isSearch; $('#view-compare').hidden=isSearch;
+      $('#tab-search').classList.toggle('active',isSearch);
+      $('#tab-compare').classList.toggle('active',!isSearch);
+    }
     function bootFromHash(){
-      const h = location.hash.slice(1);
-      if (!h.startsWith('compare=')) return;
-      const pair = decodeURIComponent(h.split('=')[1].split('&')[0]||'');
-      const [a,b] = pair.split('|');
-      const p = new URLSearchParams(h.split('&').slice(1).join('&')).get('p') || 'kr';
-      if (a && b){ $('#idA').value = a; $('#idB').value = b; $('#platform').value = p; onCompare(); }
+      const h=location.hash.slice(1); if(!h) return;
+      if(h.startsWith('compare=')){
+        switchTab('compare');
+        const pair=decodeURIComponent(h.split('=')[1].split('&')[0]||'');
+        const [a,b]=pair.split('|'); const p=new URLSearchParams(h.split('&').slice(1).join('&')).get('p')||'kr';
+        if(a&&b){ $('#idA').value=a; $('#idB').value=b; $('#platform').value=p; doCompare(); }
+      }else if(h.startsWith('search=')){
+        switchTab('search');
+        const id=decodeURIComponent(h.split('=')[1].split('&')[0]||''); const p=new URLSearchParams(h.split('&').slice(1).join('&')).get('p')||'kr';
+        if(id){ $('#sId').value=id; $('#sPlatform').value=p; doSearch(); }
+      }
     }
 
-    document.addEventListener('click', (e)=>{
-      const id = e.target.id;
-      if (id==='compare') onCompare();
-      if (id==='share'){
-        try{ navigator.clipboard.writeText(location.href); showToast('링크를 복사했습니다'); }catch{ showToast('복사 실패') }
-      }
+    // events
+    document.addEventListener('click',(e)=>{
+      const id=e.target.id;
+      if(id==='searchBtn') doSearch();
+      if(id==='compare') doCompare();
+      if(id==='tab-search') switchTab('search');
+      if(id==='tab-compare') switchTab('compare');
+      if(id==='share'){ try{ navigator.clipboard.writeText(location.href); showToast('링크를 복사했습니다'); }catch{ showToast('복사 실패') } }
     });
-    document.addEventListener('keydown', (e)=>{ if (e.key==='Enter') onCompare(); })
+    document.addEventListener('keydown',(e)=>{ if(e.key==='Enter'){ if(!$('#view-search').hidden) doSearch(); else doCompare(); }});
     window.addEventListener('DOMContentLoaded', bootFromHash);
   </script>
 </body>
