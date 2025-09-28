@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Thunder • 전적 비교</title>
   <meta name="color-scheme" content="light dark">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cpath d='M28 4l8 14h-8l8 14h-8l-8 14' stroke='%23fff' stroke-width='8' fill='none'/%3E%3C/svg%3E">
   <style>
     :root{--bg:#0b0b0c;--fg:#e7e7ea;--muted:#9aa0a6;--card:#151518;--acc:#6ea8fe;--ok:#2ecc71;--bad:#ff6b6b;--warn:#f0ad4e;--line:#242428}
     @media (prefers-color-scheme: light){:root{--bg:#f8f9fb;--fg:#0b0b0c;--muted:#60646c;--card:#ffffff;--acc:#1256d6;--ok:#1a8f4d;--bad:#d63a3a;--warn:#b86e00;--line:#e8e8ef}}
@@ -26,13 +27,11 @@
     .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
     .kpi{border:1px solid var(--line);border-radius:10px;padding:10px;text-align:center}
     .kpi .val{font-weight:700;font-size:16px}
-    .vs{display:flex;align-items:center;justify-content:center;font-weight:800}
     .table{width:100%;border-collapse:collapse;border:1px solid var(--line);border-radius:10px;overflow:hidden}
     .table th,.table td{padding:10px;border-bottom:1px solid var(--line);text-align:center}
     .table th{background:rgba(127,127,127,.08)}
     .pill{display:inline-block;padding:2px 8px;border-radius:999px;border:1px solid var(--line);font-size:12px}
     .ok{color:var(--ok)}.bad{color:var(--bad)}.warn{color:var(--warn)}
-    .flex{display:flex;gap:8px;align-items:center}
     .sp{flex:1}
     .toast{position:fixed;right:12px;bottom:12px;background:var(--card);border:1px solid var(--line);padding:10px 12px;border-radius:10px}
     footer{margin-top:24px;color:var(--muted);font-size:12px}
@@ -85,7 +84,7 @@
 
   <script type="module">
     // ====== CONFIG ======
-    const API_BASE = "https://https://yee.mfleon32.workers.dev/"; // workers.dev로 교체
+    const API_BASE = "https://yee.mfleon32.workers.dev"; // 끝 슬래시 금지
     const DEFAULT_COUNT = 10;
 
     // ====== UTIL ======
@@ -93,12 +92,12 @@
     const showToast = (msg) => { const el = $('#toast'); el.textContent = msg; el.hidden = false; setTimeout(()=>el.hidden=true, 3500) };
     const parseRiotId = (s) => {
       if (!s) return null;
-      const t = s.trim();
+      const t = s.trim().replace(/\s*#\s*/, '#'); // # 주변 공백 정리
       const i = t.indexOf('#');
       if (i < 1) return null;
       const gameName = t.slice(0, i).trim();
-      const tagLine = t.slice(i+1).trim();
-      if (!/^[A-Za-z0-9]{2,5}$/.test(tagLine)) return null;
+      const tagLine = t.slice(i+1).replace(/\s+/g,'').toUpperCase(); // 내부 공백 제거
+      if (!/^[A-Z0-9]{2,5}$/.test(tagLine)) return null;
       return { gameName, tagLine, riotId: `${gameName}#${tagLine}` };
     };
     const pct = (n) => (n*100).toFixed(1) + '%';
@@ -106,7 +105,7 @@
 
     // ====== API ======
     async function loadProfile(riotId, platform, count=DEFAULT_COUNT){
-      const url = new URL(API_BASE + "/v1/profile");
+      const url = new URL('/v1/profile', API_BASE);
       url.searchParams.set('riotId', riotId);
       url.searchParams.set('platform', platform);
       url.searchParams.set('count', String(count));
@@ -122,8 +121,8 @@
 
     function renderSide(p){
       const r = p.recent?.summary || {wins:0,losses:0,kills:0,deaths:0,assists:0,avgCS:0};
-      const games = r.wins + r.losses;
-      const wr = games? pct(r.wins/games):'0%';
+      const games = r.wins + r.losses || 1;
+      const wr = pct(r.wins/(r.wins+r.losses||1));
       const kda = r.deaths? fmt((r.kills+r.assists)/r.deaths,2): '∞';
       const rankSolo = (p.ranks?.solo?.tier||'UNRANKED') + (p.ranks?.solo?.rank?(' '+p.ranks.solo.rank):'');
       const lpSolo = p.ranks?.solo?.lp!=null? `${p.ranks.solo.lp} LP` : '';
@@ -135,12 +134,12 @@
             ${kpi('레벨', p.summoner?.summonerLevel ?? '-')}
             ${kpi('승률', wr, (r.wins>=r.losses?'ok':'bad'))}
             ${kpi('KDA', kda)}
-            ${kpi('평균 K', fmt(r.kills/games||0,1))}
-            ${kpi('평균 D', fmt(r.deaths/games||0,1))}
-            ${kpi('평균 A', fmt(r.assists/games||0,1))}
-            ${kpi('평균 CS', fmt(r.avgCS||0,1))}
+            ${kpi('평균 K', fmt(r.kills/games,1))}
+            ${kpi('평균 D', fmt(r.deaths/games,1))}
+            ${kpi('평균 A', fmt(r.assists/games,1))}
+            ${kpi('평균 CS', fmt(r.avgCS,1))}
           </div>
-        </div>`
+        </div>`;
     }
 
     function renderCompare(a, b){
@@ -149,8 +148,8 @@
       host.insertAdjacentHTML('beforeend', renderSide(a));
       host.insertAdjacentHTML('beforeend', renderSide(b));
 
-      const A = a.recent?.summary || {}; const B = b.recent?.summary || {};
-      const ag = (A.wins||0)+(A.losses||0)||1; const bg = (B.wins||0)+(B.losses||0)||1;
+      const A = a.recent?.summary || {}, B = b.recent?.summary || {};
+      const ag = (A.wins||0)+(A.losses||0)||1, bg = (B.wins||0)+(B.losses||0)||1;
       const rows = [
         ['승률', pct((A.wins||0)/ag), pct((B.wins||0)/bg)],
         ['KDA', A.deaths?fmt(((A.kills||0)+(A.assists||0))/A.deaths,2):'∞', B.deaths?fmt(((B.kills||0)+(B.assists||0))/B.deaths,2):'∞'],
@@ -168,8 +167,7 @@
             ${rows.map(r=>`<tr><td>${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td></tr>`).join('')}
           </tbody>
         </table>`;
-      // 섹션 아래에 표 추가
-      document.querySelector('.wrap').appendChild(table);
+      host.parentElement.appendChild(table);
     }
 
     // ====== FLOW ======
