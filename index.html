@@ -1,13 +1,70 @@
+<!--
+Thunder Compare v1
+- Single-file frontend with side-by-side Summoner compare
+- Works with the Cloudflare Worker below
+- Replace your current index.html with this file
+- Set API_BASE to your workers.dev URL
+- Default platform: kr
+- Dark/Light auto theme
+- Event delegation and robust error handling
+-->
 <!doctype html>
 <html lang="ko">
-  <head>
-    <link rel="icon" href="/cjsend/favicon.ico">
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>Thunder | cjsend</title>
-  </head>
-  <body>
-    <div id="app">Thunder</div>
-    <script type="module" src="/src/main.ts"></script>
-  </body>
-</html>
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Thunder • 전적 비교</title>
+<meta name="color-scheme" content="light dark">
+<style>
+:root{--bg:#0b0b0c;--fg:#e7e7ea;--muted:#9aa0a6;--card:#151518;--acc:#6ea8fe;--ok:#2ecc71;--bad:#ff6b6b;--warn:#f0ad4e;--line:#242428}
+@media (prefers-color-scheme: light){:root{--bg:#f8f9fb;--fg:#0b0b0c;--muted:#60646c;--card:#ffffff;--acc:#1256d6;--ok:#1a8f4d;--bad:#d63a3a;--warn:#b86e00;--line:#e8e8ef}}
+*{box-sizing:border-box}html,body{height:100%}body{margin:0;font:14px/1.45 system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, Apple SD Gothic Neo, Noto Sans KR, sans-serif;background:var(--bg);color:var(--fg)}
+a{color:var(--acc);text-decoration:none}a:hover{text-decoration:underline}
+.wrap{max-width:1100px;margin:0 auto;padding:24px}
+header{display:flex;align-items:center;gap:12px;margin-bottom:16px}
+.logo{font-weight:700;font-size:18px}
+.bar{display:grid;gap:8px;background:var(--card);border:1px solid var(--line);padding:12px;border-radius:12px}
+.row{display:grid;grid-template-columns:1fr 1fr auto auto;gap:8px}
+input[type=text]{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:transparent;color:var(--fg)}
+select,button{padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--fg);cursor:pointer}
+button.primary{background:var(--acc);border-color:var(--acc);color:#fff}
+button:disabled{opacity:.6;cursor:not-allowed}
+.hint{color:var(--muted);font-size:12px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px}
+.title{font-weight:700;margin-bottom:8px}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.kpi{border:1px solid var(--line);border-radius:10px;padding:10px;text-align:center}
+.kpi .val{font-weight:700;font-size:16px}
+.vs{display:flex;align-items:center;justify-content:center;font-weight:800}
+.table{width:100%;border-collapse:collapse;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.table th,.table td{padding:10px;border-bottom:1px solid var(--line);text-align:center}
+.table th{background:rgba(127,127,127,.08)}
+.pill{display:inline-block;padding:2px 8px;border-radius:999px;border:1px solid var(--line);font-size:12px}
+.ok{color:var(--ok)}.bad{color:var(--bad)}.warn{color:var(--warn)}
+.flex{display:flex;gap:8px;align-items:center}
+.sp{flex:1}
+.toast{position:fixed;right:12px;bottom:12px;background:var(--card);border:1px solid var(--line);padding:10px 12px;border-radius:10px}
+footer{margin-top:24px;color:var(--muted);font-size:12px}
+@media (max-width:900px){.row{grid-template-columns:1fr;}.grid{grid-template-columns:1fr}.kpis{grid-template-columns:repeat(2,1fr)}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+<div class="logo">⚡ Thunder 전적 비교</div>
+<div class="sp"></div>
+<button id="share" title="현재 비교 링크 복사">링크복사</button>
+</header>
+<section class="bar">
+<div class="row">
+<input id="idA" type="text" placeholder="소환사A Riot ID (예: Hide on bush#KR1)" autocomplete="off" />
+<input id="idB" type="text" placeholder="소환사B Riot ID (예: Faker#KR1)" autocomplete="off" />
+<select id="platform" aria-label="플랫폼">
+<option value="kr" selected>KR</option>
+<option value="jp1">JP</option>
+<option value="euw1">EUW</option>
+<option value="eun1">EUNE</option>
+<option value="na1">NA</option>
+<option value="br1">BR</option>
+<option value="la1">LAN</option>
