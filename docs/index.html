@@ -5,91 +5,96 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Thunder • 전적검색 + 비교</title>
   <meta name="color-scheme" content="light dark">
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cpath d='M28 4l8 14h-8l8 14h-8l-8 14' stroke='%23fff' stroke-width='8' fill='none'/%3E%3C/svg%3E">
   <style>
     :root{--bg:#0b0b0c;--fg:#e7e7ea;--muted:#9aa0a6;--card:#151518;--acc:#6ea8fe;--ok:#2ecc71;--bad:#ff6b6b;--warn:#f0ad4e;--line:#242428}
-    @media (prefers-color-scheme: light){:root{--bg:#f8f9fb;--fg:#0b0b0c;--muted:#60646c;--card:#ffffff;--acc:#1256d6;--ok:#1a8f4d;--bad:#d63a3a;--warn:#b86e00;--line:#e8e8ef}}
-    *{box-sizing:border-box}html,body{height:100%}body{margin:0;font:14px/1.45 system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,Apple SD Gothic Neo,Noto Sans KR,sans-serif;background:var(--bg);color:var(--fg)}
-    .wrap{max-width:1100px;margin:0 auto;padding:24px}
-    header{display:flex;align-items:center;gap:12px;margin-bottom:12px}
-    .logo{font-weight:700;font-size:18px}
-    .tabs{display:flex;gap:6px}
-    .tab{padding:8px 12px;border:1px solid var(--line);background:var(--card);border-radius:999px;cursor:pointer}
-    .tab.active{background:var(--acc);color:#fff;border-color:var(--acc)}
-    .bar{display:grid;gap:8px;background:var(--card);border:1px solid var(--line);padding:12px;border-radius:12px;margin-top:8px}
-    .row{display:grid;grid-template-columns:1fr 1fr auto auto;gap:8px}
-    input[type=text]{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:transparent;color:var(--fg)}
-    select,button{padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--fg);cursor:pointer}
-    button.primary{background:var(--acc);border-color:var(--acc);color:#fff}
-    button:disabled{opacity:.6;cursor:not-allowed}
-    .hint{color:var(--muted);font-size:12px}
-    .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px}
-    .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px}
-    .title{font-weight:700;margin-bottom:8px}
-    .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
-    .kpi{border:1px solid var(--line);border-radius:10px;padding:10px;text-align:center}
-    .kpi .val{font-weight:700;font-size:16px}
-    .table{width:100%;border-collapse:collapse;border:1px solid var(--line);border-radius:10px;overflow:hidden}
-    .table th,.table td{padding:10px;border-bottom:1px solid var(--line);text-align:center}
-    .table th{background:rgba(127,127,127,.08)}
-    .pill{display:inline-block;padding:2px 8px;border-radius:999px;border:1px solid var(--line);font-size:12px}
-    .sp{flex:1}.toast{position:fixed;right:12px;bottom:12px;background:var(--card);border:1px solid var(--line);padding:10px 12px;border-radius:10px}
-    footer{margin-top:24px;color:var(--muted);font-size:12px}
-    @media (max-width:900px){.row{grid-template-columns:1fr}.grid{grid-template-columns:1fr}.kpis{grid-template-columns:repeat(2,1fr)}}
+    @media (prefers-color-scheme: light){
+      :root{--bg:#f8f9fb;--fg:#0b0b0c;--muted:#60646c;--card:#ffffff;--line:#e7e9ef}
+    }
+    *{box-sizing:border-box}
+    body{margin:0;background:var(--bg);color:var(--fg);font:14px/1.5 system-ui,-apple-system,Segoe UI,Roboto,Apple SD Gothic Neo,Noto Sans KR,Arial}
+    a{color:var(--acc);text-decoration:none}
+    .wrap{max-width:1100px;margin:0 auto;padding:20px}
+    header{display:flex;align-items:center;gap:12px;margin-bottom:16px}
+    .logo{font-weight:700;letter-spacing:.3px}
+    .chip{font-size:12px;padding:2px 8px;border-radius:999px;background:var(--card);border:1px solid var(--line);color:var(--muted)}
+    .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px}
+    .grid{display:grid;gap:12px}
+    .g2{grid-template-columns:1fr 1fr}
+    .g3{grid-template-columns:1fr 1fr 1fr}
+    @media (max-width:860px){.g2,.g3{grid-template-columns:1fr}}
+    input,select,button{height:40px;border-radius:10px;border:1px solid var(--line);background:transparent;color:var(--fg);padding:0 12px}
+    input::placeholder{color:var(--muted)}
+    button{background:var(--acc);color:#0b0b0c;border:none;font-weight:600;cursor:pointer}
+    button[disabled]{opacity:.5;cursor:not-allowed}
+    .row{display:flex;gap:8px;flex-wrap:wrap}
+    .bar{height:10px;background:var(--line);border-radius:999px;overflow:hidden}
+    .bar>i{display:block;height:100%;background:var(--ok)}
+    .muted{color:var(--muted)}
+    .err{position:fixed;right:14px;bottom:14px;background:#1a1a1f;border:1px solid var(--line);color:#fff;padding:8px 10px;border-radius:12px;font-size:12px}
+    .kpi{display:flex;gap:8px;align-items:baseline}
+    .kpi .v{font:600 18px/1 system-ui}
+    .kpi .l{color:var(--muted);font-size:12px}
+    .pill{padding:2px 8px;border:1px solid var(--line);border-radius:999px;color:var(--muted);font-size:12px}
+    .hr{height:1px;background:var(--line);margin:10px 0}
+    .loading{opacity:.6;pointer-events:none}
   </style>
-  <script type="module" crossorigin src="/cjsend/assets/index-DEabA9-c.js"></script>
+  <script type="module" crossorigin src="/cjsend/assets/index-CsJI-W8w.js"></script>
 </head>
 <body>
   <div class="wrap">
     <header>
-      <div class="logo">⚡ Thunder 전적</div>
-      <div class="sp"></div>
-      <div class="tabs" role="tablist">
-        <button id="tab-search" class="tab active" role="tab" aria-selected="true">전적검색</button>
-        <button id="tab-compare" class="tab" role="tab" aria-selected="false">비교하기</button>
-        <button id="share" title="현재 링크 복사">링크복사</button>
-      </div>
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M3 12h5l3-9 3 18 3-9h4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      <div class="logo">Thunder</div>
+      <span class="chip">전적검색</span>
+      <span class="chip">비교</span>
     </header>
 
-    <!-- 전적검색 -->
-    <section id="view-search" class="bar" role="tabpanel" aria-labelledby="tab-search">
-      <div class="row">
-        <input id="sId" type="text" placeholder="Riot ID (예: Faker#KR1)" autocomplete="off" />
-        <select id="sPlatform" aria-label="플랫폼">
-          <option value="kr" selected>KR</option><option value="jp1">JP</option><option value="euw1">EUW</option>
-          <option value="eun1">EUNE</option><option value="na1">NA</option><option value="br1">BR</option>
-          <option value="la1">LAN</option><option value="la2">LAS</option><option value="tr1">TR</option>
-          <option value="ru">RU</option><option value="oc1">OCE</option><option value="ph2">PH</option>
-          <option value="sg2">SG</option><option value="th2">TH</option><option value="tw2">TW</option><option value="vn2">VN</option>
-        </select>
-        <button id="searchBtn" class="primary">검색</button>
+    <section class="grid g2">
+      <div class="card">
+        <h3 style="margin:0 0 10px">전적 검색</h3>
+        <form id="form-search" class="grid" style="grid-template-columns: 110px 1fr 110px; gap:8px">
+          <select id="region">
+            <option value="kr">KR</option>
+            <option value="na1">NA</option>
+            <option value="euw1">EUW</option>
+            <option value="eun1">EUNE</option>
+            <option value="jp1">JP</option>
+          </select>
+          <input id="name" placeholder="소환사 이름" autocomplete="off" />
+          <button id="btn-search" type="submit">검색</button>
+        </form>
+        <div id="search-out" style="margin-top:12px"></div>
       </div>
-      <div class="hint">형식: <code>게임명#태그</code>. 최근 10게임 요약과 샘플을 표시.</div>
-      <div id="sResult" class="grid" aria-live="polite" style="margin-top:12px"></div>
+
+      <div class="card">
+        <h3 style="margin:0 0 10px">비교하기</h3>
+        <form id="form-compare" class="grid" style="grid-template-columns: 110px 1fr 1fr 110px; gap:8px">
+          <select id="region2">
+            <option value="kr">KR</option>
+            <option value="na1">NA</option>
+            <option value="euw1">EUW</option>
+            <option value="eun1">EUNE</option>
+            <option value="jp1">JP</option>
+          </select>
+          <input id="nameA" placeholder="소환사 A" autocomplete="off" />
+          <input id="nameB" placeholder="소환사 B" autocomplete="off" />
+          <button id="btn-compare" type="submit">비교</button>
+        </form>
+        <div id="compare-out" style="margin-top:12px"></div>
+      </div>
     </section>
 
-    <!-- 비교하기 -->
-    <section id="view-compare" class="bar" role="tabpanel" aria-labelledby="tab-compare" hidden>
+    <section class="card" style="margin-top:12px">
       <div class="row">
-        <input id="idA" type="text" placeholder="소환사A (예: Hide on bush#KR1)" autocomplete="off" />
-        <input id="idB" type="text" placeholder="소환사B (예: Faker#KR1)" autocomplete="off" />
-        <select id="platform" aria-label="플랫폼">
-          <option value="kr" selected>KR</option><option value="jp1">JP</option><option value="euw1">EUW</option>
-          <option value="eun1">EUNE</option><option value="na1">NA</option><option value="br1">BR</option>
-          <option value="la1">LAN</option><option value="la2">LAS</option><option value="tr1">TR</option>
-          <option value="ru">RU</option><option value="oc1">OCE</option><option value="ph2">PH</option>
-          <option value="sg2">SG</option><option value="th2">TH</option><option value="tw2">TW</option><option value="vn2">VN</option>
-        </select>
-        <button id="compare" class="primary">비교하기</button>
+        <span class="pill">자동 다크/라이트</span>
+        <span class="pill">엔터 제출</span>
+        <span class="pill">데모 폴백</span>
+        <span class="pill">CORS 안전</span>
       </div>
-      <div class="hint">두 Riot ID 입력. 최근 10게임 기준 비교.</div>
-      <section id="cResult" class="grid" aria-live="polite" style="margin-top:12px"></section>
     </section>
-
-    <footer><div>v2025-09-28 • 캐시 5분 • Worker CORS_ORIGIN=GitHub Pages 호스트</div></footer>
   </div>
 
-  <div id="toast" class="toast" hidden></div>
+  <div id="err" class="err" hidden>0 error</div>
 
 </body>
 </html>
