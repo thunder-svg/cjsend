@@ -1,288 +1,225 @@
 <!doctype html>
 <html lang="ko">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Thunder • 전적검색 + 비교</title>
-  <meta name="color-scheme" content="light dark">
-  <style>
-    :root{--bg:#0b0b0c;--fg:#e7e7ea;--muted:#9aa0a6;--card:#151518;--acc:#6ea8fe;--ok:#2ecc71;--bad:#ff6b6b;--warn:#f0ad4e;--line:#242428}
-    @media (prefers-color-scheme: light){
-      :root{--bg:#f8f9fb;--fg:#0b0b0c;--muted:#60646c;--card:#ffffff;--line:#e7e9ef}
-    }
-    *{box-sizing:border-box}
-    body{margin:0;background:var(--bg);color:var(--fg);font:14px/1.5 system-ui,-apple-system,Segoe UI,Roboto,Apple SD Gothic Neo,Noto Sans KR,Arial}
-    a{color:var(--acc);text-decoration:none}
-    .wrap{max-width:1100px;margin:0 auto;padding:20px}
-    header{display:flex;align-items:center;gap:12px;margin-bottom:16px}
-    .logo{font-weight:700;letter-spacing:.3px}
-    .chip{font-size:12px;padding:2px 8px;border-radius:999px;background:var(--card);border:1px solid var(--line);color:var(--muted)}
-    .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px}
-    .grid{display:grid;gap:12px}
-    .g2{grid-template-columns:1fr 1fr}
-    .g3{grid-template-columns:1fr 1fr 1fr}
-    @media (max-width:860px){.g2,.g3{grid-template-columns:1fr}}
-    input,select,button{height:40px;border-radius:10px;border:1px solid var(--line);background:transparent;color:var(--fg);padding:0 12px}
-    input::placeholder{color:var(--muted)}
-    button{background:var(--acc);color:#0b0b0c;border:none;font-weight:600;cursor:pointer}
-    button[disabled]{opacity:.5;cursor:not-allowed}
-    .row{display:flex;gap:8px;flex-wrap:wrap}
-    .bar{height:10px;background:var(--line);border-radius:999px;overflow:hidden}
-    .bar>i{display:block;height:100%;background:var(--ok)}
-    .muted{color:var(--muted)}
-    .err{position:fixed;right:14px;bottom:14px;background:#1a1a1f;border:1px solid var(--line);color:#fff;padding:8px 10px;border-radius:12px;font-size:12px}
-    .kpi{display:flex;gap:8px;align-items:baseline}
-    .kpi .v{font:600 18px/1 system-ui}
-    .kpi .l{color:var(--muted);font-size:12px}
-    .pill{padding:2px 8px;border:1px solid var(--line);border-radius:999px;color:var(--muted);font-size:12px}
-    .hr{height:1px;background:var(--line);margin:10px 0}
-    .loading{opacity:.6;pointer-events:none}
-  </style>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Thunder • 전적검색·비교·랭킹</title>
+<meta name="color-scheme" content="light dark">
+<style>
+:root{--bg:#0b0b0c;--fg:#e7e7ea;--muted:#9aa0a6;--card:#151518;--acc:#6ea8fe;--ok:#2ecc71;--bad:#ff6b6b;--warn:#f0ad4e;--line:#242428}
+@media (prefers-color-scheme: light){:root{--bg:#f8f9fb;--fg:#0b0b0c;--muted:#60646c;--card:#ffffff;--line:#e7e9ef}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:14px/1.5 system-ui,-apple-system,Segoe UI,Roboto,Apple SD Gothic Neo,Noto Sans KR}
+a{color:var(--acc);text-decoration:none}.wrap{max-width:1140px;margin:0 auto;padding:18px}
+header{display:flex;align-items:center;gap:10px;margin-bottom:10px}.logo{font-weight:700}
+.nav{display:flex;gap:6px;flex-wrap:wrap}.tab{padding:6px 10px;border:1px solid var(--line);border-radius:999px;cursor:pointer}
+.tab[aria-selected="true"]{background:var(--acc);color:#0b0b0c;border-color:transparent}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px}.grid{display:grid;gap:10px}
+.g2{grid-template-columns:1fr 1fr}.g3{grid-template-columns:repeat(3,1fr)}
+@media (max-width:860px){.g2,.g3{grid-template-columns:1fr}}
+input,select,button{height:40px;border-radius:10px;border:1px solid var(--line);background:transparent;color:var(--fg);padding:0 12px}
+button{background:var(--acc);color:#0b0b0c;border:none;font-weight:600;cursor:pointer}button[disabled]{opacity:.5;cursor:not-allowed}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.muted{color:var(--muted)}.hr{height:1px;background:var(--line);margin:10px 0}
+.bar{height:10px;background:var(--line);border-radius:999px;overflow:hidden}.bar>i{display:block;height:100%;background:var(--ok)}
+.kpi{display:flex;gap:8px;align-items:baseline}.kpi .v{font:600 18px/1 system-ui}.pill{padding:2px 8px;border:1px solid var(--line);border-radius:999px;color:var(--muted);font-size:12px}
+.table{width:100%;border-collapse:collapse}.table th,.table td{padding:8px;border-bottom:1px solid var(--line);text-align:left}
+.loading{opacity:.6;pointer-events:none}.err{position:fixed;right:12px;bottom:12px;background:#1a1a1f;border:1px solid var(--line);color:#fff;padding:8px 10px;border-radius:12px;font-size:12px}
+</style>
 </head>
 <body>
-  <div class="wrap">
-    <header>
-      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M3 12h5l3-9 3 18 3-9h4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-      <div class="logo">Thunder</div>
-      <span class="chip">전적검색</span>
-      <span class="chip">비교</span>
-    </header>
+<div class="wrap">
+  <header>
+    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M3 12h5l3-9 3 18 3-9h4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+    <div class="logo">Thunder</div>
+    <nav class="nav" id="nav"></nav>
+  </header>
 
-    <section class="grid g2">
-      <div class="card">
-        <h3 style="margin:0 0 10px">전적 검색</h3>
-        <form id="form-search" class="grid" style="grid-template-columns: 110px 1fr 110px; gap:8px">
-          <select id="region">
-            <option value="kr">KR</option>
-            <option value="na1">NA</option>
-            <option value="euw1">EUW</option>
-            <option value="eun1">EUNE</option>
-            <option value="jp1">JP</option>
-          </select>
-          <input id="name" placeholder="소환사 이름" autocomplete="off" />
-          <button id="btn-search" type="submit">검색</button>
-        </form>
-        <div id="search-out" style="margin-top:12px"></div>
-      </div>
+  <section id="view"></section>
+</div>
+<div id="err" class="err" hidden>0 error</div>
 
-      <div class="card">
-        <h3 style="margin:0 0 10px">비교하기</h3>
-        <form id="form-compare" class="grid" style="grid-template-columns: 110px 1fr 1fr 110px; gap:8px">
-          <select id="region2">
-            <option value="kr">KR</option>
-            <option value="na1">NA</option>
-            <option value="euw1">EUW</option>
-            <option value="eun1">EUNE</option>
-            <option value="jp1">JP</option>
-          </select>
-          <input id="nameA" placeholder="소환사 A" autocomplete="off" />
-          <input id="nameB" placeholder="소환사 B" autocomplete="off" />
-          <button id="btn-compare" type="submit">비교</button>
-        </form>
-        <div id="compare-out" style="margin-top:12px"></div>
-      </div>
-    </section>
+<script type="module">
+const API_BASE = "https://YOUR-WORKER-NAME.workers.dev"; // 교체
+const $ = (s,el=document)=>el.querySelector(s);
+const out = $("#view"); const nav = $("#nav"); const outErr=$("#err"); let errN=0;
+const addErr = (e)=>{errN++; outErr.textContent = errN+" error"; outErr.hidden=false; console.error(e);};
+const routes = ["검색","비교","랭킹","라이브","로테이션","챔피언"];
+const state = { region:"kr", queue:"RANKED_SOLO_5x5" };
+routes.forEach((r,i)=>{ const b=document.createElement("button"); b.className="tab"; b.textContent=r; b.onclick=()=>go(i); nav.appendChild(b); });
+function selTab(i){ [...nav.children].forEach((c,idx)=>c.setAttribute("aria-selected", idx===i?"true":"false")); }
 
-    <section class="card" style="margin-top:12px">
+function go(i){ selTab(i); if(i===0) viewSearch(); if(i===1) viewCompare(); if(i===2) viewLadder(); if(i===3) viewLive(); if(i===4) viewRotations(); if(i===5) viewChampions(); }
+const json = async(u)=>{ const r=await fetch(u,{headers:{"Accept":"application/json"}}); if(!r.ok) throw new Error("HTTP "+r.status+" "+u); return r.json(); };
+const aggKDA = (last10)=>{ const s=last10.reduce((a,m)=>{a.k+=m.k;a.d+=m.d;a.a+=m.a;a.w+=m.win?1:0;return a},{k:0,d:0,a:0,w:0}); const kda=s.d?(s.k+s.a)/s.d:(s.k+s.a); return {games:last10.length,wins:s.w,winrate:Math.round((s.w/last10.length)*100),k:s.k,d:s.d,a:s.a,kda:Number(kda.toFixed(2))}; };
+const fmt = n=>Number(n).toLocaleString();
+
+function profileCard(p){
+  const k = aggKDA(p.last10||[]);
+  return `<div class="grid g2" style="align-items:center">
+    <div class="row" style="gap:12px">
+      <div style="width:54px;height:54px;border-radius:14px;background:#222;display:grid;place-items:center;font-weight:700">${p.iconId||""}</div>
+      <div><div style="font-weight:700">${p.name}</div><div class="muted">LV ${fmt(p.level||0)}</div></div>
+    </div>
+    <div class="row" style="justify-content:flex-end;gap:16px">
+      <div class="kpi"><div class="v">${k.winrate}%</div><div class="muted">승률(10)</div></div>
+      <div class="kpi"><div class="v">${k.kda}</div><div class="muted">KDA</div></div>
+      <div class="kpi"><div class="v">${k.k}/${k.d}/${k.a}</div><div class="muted">합산</div></div>
+    </div>
+    <div class="hr"></div>
+    <div class="row"><span class="pill">${p.rank?`${p.rank.tier} ${p.rank.division} • ${p.rank.lp}LP`:"Unranked"}</span><span class="pill">${state.region.toUpperCase()}</span></div>
+  </div>`;
+}
+
+function viewSearch(){
+  out.innerHTML = `<div class="card">
+    <h3 style="margin:0 0 8px">전적 검색</h3>
+    <form id="f" class="grid" style="grid-template-columns:110px 1fr 110px;gap:8px">
+      ${regionSel("reg")}
+      <input id="name" placeholder="Riot ID 예: Faker#KR1" autocomplete="off"/>
+      <button type="submit">검색</button>
+    </form>
+    <div id="box" style="margin-top:10px"></div>
+  </div>`;
+  $("#reg").value = state.region;
+  $("#f").addEventListener("submit", async (e)=>{
+    e.preventDefault();
+    state.region = $("#reg").value;
+    const name = $("#name").value.trim();
+    if(!name) return;
+    const u = new URL(API_BASE+"/v1/profile"); u.searchParams.set("region", state.region); u.searchParams.set("name", name); u.searchParams.set("count","10");
+    try{ const p = await json(u.toString()); $("#box").innerHTML = profileCard(p); }catch(err){ addErr(err); $("#box").innerHTML = `<div class="muted">불러오기 실패</div>`; }
+  });
+}
+
+function viewCompare(){
+  out.innerHTML = `<div class="card">
+    <h3 style="margin:0 0 8px">비교하기</h3>
+    <form id="f" class="grid" style="grid-template-columns:110px 1fr 1fr 110px;gap:8px">
+      ${regionSel("reg2")}
+      <input id="a" placeholder="A: Riot ID" autocomplete="off"/>
+      <input id="b" placeholder="B: Riot ID" autocomplete="off"/>
+      <button type="submit">비교</button>
+    </form>
+    <div id="box" style="margin-top:10px"></div>
+  </div>`;
+  $("#reg2").value = state.region;
+  $("#f").addEventListener("submit", async (e)=>{
+    e.preventDefault(); state.region=$("#reg2").value;
+    const A=$("#a").value.trim(), B=$("#b").value.trim(); if(!A||!B) return;
+    const q = (name)=>{ const u=new URL(API_BASE+"/v1/profile"); u.searchParams.set("region",state.region); u.searchParams.set("name",name); u.searchParams.set("count","10"); return json(u.toString()); };
+    try{
+      const [a,b]=await Promise.all([q(A),q(B)]);
+      const ka=aggKDA(a.last10), kb=aggKDA(b.last10);
+      const diff=(x,y)=>((x-y)>0?"+":"")+String((x-y).toFixed? (x-y).toFixed(2):(x-y));
+      $("#box").innerHTML = `
+        <div class="grid g2"><div class="card">${profileCard(a)}</div><div class="card">${profileCard(b)}</div></div>
+        <div class="card" style="margin-top:10px">
+          <h4 style="margin:0 0 6px">핵심 지표</h4>
+          <table class="table">
+            <tr><th>지표</th><th>A</th><th>B</th><th>Δ</th></tr>
+            <tr><td>승률(10)</td><td>${ka.winrate}%</td><td>${kb.winrate}%</td><td>${diff(ka.winrate,kb.winrate)}%</td></tr>
+            <tr><td>KDA</td><td>${ka.kda}</td><td>${kb.kda}</td><td>${diff(ka.kda,kb.kda)}</td></tr>
+            <tr><td>합산 K/D/A</td><td>${ka.k}/${ka.d}/${ka.a}</td><td>${kb.k}/${kb.d}/${kb.a}</td><td>${diff(ka.k+ka.a,kb.k+kb.a)}</td></tr>
+          </table>
+        </div>`;
+    }catch(err){ addErr(err); $("#box").innerHTML = `<div class="muted">불러오기 실패</div>`; }
+  });
+}
+
+function viewLadder(){
+  out.innerHTML = `<div class="card">
+    <div class="row" style="justify-content:space-between">
+      <h3 style="margin:0">랭킹</h3>
       <div class="row">
-        <span class="pill">자동 다크/라이트</span>
-        <span class="pill">엔터 제출</span>
-        <span class="pill">데모 폴백</span>
-        <span class="pill">CORS 안전</span>
+        ${regionSel("reg3")}
+        <select id="tier"><option value="all">All</option><option value="challenger">Challenger</option><option value="grandmaster">Grandmaster</option><option value="master">Master</option></select>
+        <button id="reload">불러오기</button>
       </div>
-    </section>
-  </div>
+    </div>
+    <div id="box" style="margin-top:10px"></div>
+  </div>`;
+  $("#reg3").value = state.region;
+  $("#reload").onclick = load;
+  $("#tier").value = "all";
+  load();
+  async function load(){
+    state.region=$("#reg3").value;
+    const tier=$("#tier").value;
+    const u=new URL(API_BASE+"/v1/ladder"); u.searchParams.set("region",state.region); u.searchParams.set("queue",state.queue); u.searchParams.set("tier",tier);
+    try{
+      const d=await json(u.toString());
+      const rows = d.entries.map((e,i)=>`<tr><td>${i+1}</td><td>${esc(e.summonerName)}</td><td>${e.tier}</td><td>${fmt(e.leaguePoints)}</td><td>${e.wins}/${e.losses}</td></tr>`).join("");
+      $("#box").innerHTML = `<table class="table"><thead><tr><th>#</th><th>소환사</th><th>티어</th><th>LP</th><th>전적</th></tr></thead><tbody>${rows}</tbody></table>`;
+    }catch(err){ addErr(err); $("#box").innerHTML = `<div class="muted">불러오기 실패</div>`; }
+  }
+}
 
-  <div id="err" class="err" hidden>0 error</div>
+function viewLive(){
+  out.innerHTML = `<div class="card">
+    <h3 style="margin:0 0 8px">라이브 관전</h3>
+    <form id="f" class="grid" style="grid-template-columns:110px 1fr 110px;gap:8px">
+      ${regionSel("reg4")}
+      <input id="name" placeholder="Riot ID" autocomplete="off"/>
+      <button type="submit">조회</button>
+    </form>
+    <div id="box" style="margin-top:10px"></div>
+  </div>`;
+  $("#reg4").value = state.region;
+  $("#f").addEventListener("submit", async (e)=>{
+    e.preventDefault(); state.region=$("#reg4").value;
+    const name=$("#name").value.trim(); if(!name) return;
+    const u=new URL(API_BASE+"/v1/live"); u.searchParams.set("region",state.region); u.searchParams.set("name",name);
+    try{
+      const d=await json(u.toString());
+      if(!d.inGame){ $("#box").innerHTML = `<div class="muted">게임 중 아님</div>`; return; }
+      $("#box").innerHTML = `<pre style="white-space:pre-wrap">${esc(JSON.stringify(d.game, null, 2))}</pre>`;
+    }catch(err){ addErr(err); $("#box").innerHTML = `<div class="muted">불러오기 실패</div>`; }
+  });
+}
 
-  <script type="module">
-    // ====== 환경설정 ======
-    // TODO: 너의 Cloudflare Worker 주소로 교체
-    const API_BASE = "https://yee.mfleon32.workers.dev/";
-    const DEMO = true; // API 미연결 시 true 유지
+function viewRotations(){
+  out.innerHTML = `<div class="card">
+    <div class="row" style="justify-content:space-between"><h3 style="margin:0">챔피언 로테이션</h3>${regionSel("reg5")}</div>
+    <div id="box" style="margin-top:10px"></div>
+  </div>`;
+  $("#reg5").value = state.region;
+  load();
+  $("#reg5").onchange = load;
+  async function load(){
+    state.region=$("#reg5").value;
+    const u=new URL(API_BASE+"/v1/rotations"); u.searchParams.set("region",state.region);
+    try{
+      const d=await json(u.toString());
+      const ver = await json(API_BASE+"/v1/ddragon/version");
+      const dj = await json(API_BASE+`/v1/ddragon/champions?ver=${ver.version}`);
+      const map = Object.values(dj.data).reduce((a,c)=>{a[c.key]=c.name;return a;}, {});
+      const names = d.freeChampionIds.map(id=>map[id]||id).sort();
+      $("#box").innerHTML = `<div class="row">${names.map(n=>`<span class="pill">${esc(n)}</span>`).join("")}</div>`;
+    }catch(err){ addErr(err); $("#box").innerHTML = `<div class="muted">불러오기 실패</div>`; }
+  }
+}
 
-    // ====== 유틸 ======
-    const $ = (sel, el=document) => el.querySelector(sel);
-    const outErr = $("#err");
-    let errCount = 0;
-    const addErr = (e) => {
-      errCount++;
-      outErr.textContent = errCount + " error";
-      outErr.hidden = false;
-      console.error(e);
-    };
-    const setLoading = (el, on) => el.classList.toggle("loading", !!on);
+function viewChampions(){
+  out.innerHTML = `<div class="card">
+    <div class="row" style="justify-content:space-between"><h3 style="margin:0">챔피언 목록</h3></div>
+    <div id="box" style="margin-top:10px"></div>
+  </div>`;
+  (async()=>{
+    try{
+      const ver = await json(API_BASE+"/v1/ddragon/version");
+      const dj = await json(API_BASE+`/v1/ddragon/champions?ver=${ver.version}`);
+      const cards = Object.values(dj.data).sort((a,b)=>a.name.localeCompare(b.name,"ko")).map(c=>`<div class="pill">${esc(c.name)}</div>`).join("");
+      $("#box").innerHTML = `<div class="row">${cards}</div>`;
+    }catch(err){ addErr(err); $("#box").innerHTML = `<div class="muted">불러오기 실패</div>`; }
+  })();
+}
 
-    const json = async (url) => {
-      const r = await fetch(url, { headers: { "Accept": "application/json" } });
-      if (!r.ok) throw new Error("HTTP " + r.status + " " + url);
-      return r.json();
-    };
-
-    // ====== API 어댑터 (워커 라우트 규약) ======
-    // 워커에 아래 1개 합친 요약 엔드포인트가 있으면 사용:
-    // GET /v1/profile?region=kr&name=Faker&count=10
-    async function fetchProfile(region, name, count=10) {
-      const u = new URL(API_BASE + "/v1/profile");
-      u.searchParams.set("region", region);
-      u.searchParams.set("name", name);
-      u.searchParams.set("count", String(count));
-      return json(u.toString());
-    }
-
-    // 폴백: 데모 데이터
-    function demoProfile(name) {
-      const sample = {
-        region: "kr",
-        name,
-        level: 413,
-        iconId: 4568,
-        rank: { queue: "RANKED_SOLO_5x5", tier: "CHALLENGER", division: "I", lp: 1020, wins: 720, losses: 610 },
-        last10: [
-          { k:8,d:2,a:7, win:true, cs:220, dur:31, champ:"Ahri" },
-          { k:3,d:5,a:9, win:true, cs:180, dur:28, champ:"Orianna" },
-          { k:10,d:1,a:11, win:true, cs:242, dur:33, champ:"Azir" },
-          { k:2,d:7,a:4, win:false, cs:160, dur:26, champ:"LeBlanc" },
-          { k:9,d:3,a:6, win:true, cs:210, dur:29, champ:"Akali" },
-          { k:4,d:6,a:8, win:false, cs:190, dur:30, champ:"Syndra" },
-          { k:7,d:2,a:5, win:true, cs:230, dur:32, champ:"Ahri" },
-          { k:11,d:4,a:3, win:true, cs:250, dur:34, champ:"Azir" },
-          { k:6,d:3,a:9, win:true, cs:205, dur:30, champ:"Viktor" },
-          { k:1,d:9,a:2, win:false, cs:150, dur:25, champ:"Yone" },
-        ]
-      };
-      return sample;
-    }
-
-    // ====== 계산 ======
-    function aggKDA(last10){
-      const s = last10.reduce((a,m)=>{a.k+=m.k;a.d+=m.d;a.a+=m.a;a.w+=m.win?1:0;return a},{k:0,d:0,a:0,w:0});
-      const kda = s.d? (s.k+s.a)/s.d : (s.k+s.a);
-      return {games:last10.length, wins:s.w, winrate: Math.round((s.w/last10.length)*100),
-              k:s.k, d:s.d, a:s.a, kda: Number(kda.toFixed(2))};
-    }
-    const fmt = n => n.toLocaleString();
-
-    // ====== 렌더 ======
-    function profileCard(p){
-      const k = aggKDA(p.last10||[]);
-      return `
-        <div class="grid g2" style="align-items:center">
-          <div class="row" style="align-items:center;gap:12px">
-            <div style="width:54px;height:54px;border-radius:14px;background:#222;display:grid;place-items:center;font-weight:700">${String(p.iconId||"")}</div>
-            <div>
-              <div style="font-weight:700">${p.name} <span class="muted">LV ${fmt(p.level||0)}</span></div>
-              <div class="muted">${p.rank? `${p.rank.tier} ${p.rank.division} • ${p.rank.lp}LP`:"Unranked"}</div>
-            </div>
-          </div>
-          <div class="row" style="justify-content:flex-end;gap:16px">
-            <div class="kpi"><div class="v">${k.winrate}%</div><div class="l">승률(10)</div></div>
-            <div class="kpi"><div class="v">${k.kda}</div><div class="l">KDA</div></div>
-            <div class="kpi"><div class="v">${k.k}/${k.d}/${k.a}</div><div class="l">합산</div></div>
-          </div>
-        </div>
-        <div class="hr"></div>
-        <div class="grid g3">
-          ${laneStat(p.last10,"mid")}
-          ${laneStat(p.last10,"top")}
-          ${laneStat(p.last10,"adc")}
-        </div>
-      `;
-    }
-    function laneStat(last10,label){
-      const g = last10.length||1;
-      const wins = last10.filter(m=>m.win).length;
-      const w = Math.round((wins/g)*100);
-      return `<div>
-        <div class="row" style="justify-content:space-between"><b>${label.toUpperCase()}</b><span class="muted">${wins}/${g}</span></div>
-        <div class="bar"><i style="width:${w}%;background:${w>=50?'var(--ok)':'var(--bad)'}"></i></div>
-      </div>`;
-    }
-
-    function compareView(a,b){
-      const ka = aggKDA(a.last10||[]);
-      const kb = aggKDA(b.last10||[]);
-      const diff = (x,y)=> (x-y)>0? "+"+(x-y): String(x-y);
-      return `
-        <div class="grid g2">
-          <div class="card">${profileCard(a)}</div>
-          <div class="card">${profileCard(b)}</div>
-        </div>
-        <div class="card" style="margin-top:12px">
-          <h4 style="margin:0 0 8px">핵심 지표 비교</h4>
-          <div class="grid g3">
-            ${kpiBlock("승률(10)", ka.winrate+"%", kb.winrate+"%", diff(ka.winrate,kb.winrate)+"%")}
-            ${kpiBlock("KDA", ka.kda, kb.kda, diff(ka.kda,kb.kda))}
-            ${kpiBlock("합산 K/D/A", `${ka.k}/${ka.d}/${ka.a}`, `${kb.k}/${kb.d}/${kb.a}`, diff(ka.k+ka.a, kb.k+kb.a))}
-          </div>
-        </div>
-      `;
-    }
-    function kpiBlock(label, va, vb, delta){
-      const d = Number(delta.replace("+",""));
-      const good = d>0;
-      return `<div class="card">
-        <div class="row" style="justify-content:space-between"><b>${label}</b><span class="muted">Δ ${delta}</span></div>
-        <div class="row" style="gap:12px;margin-top:8px">
-          <div style="flex:1">
-            <div class="muted" style="font-size:12px">A</div>
-            <div class="bar"><i style="width:50%"></i></div>
-            <div style="margin-top:6px">${va}</div>
-          </div>
-          <div style="flex:1">
-            <div class="muted" style="font-size:12px">B</div>
-            <div class="bar"><i style="width:50%;background:${good?'var(--bad)':'var(--ok)'}"></i></div>
-            <div style="margin-top:6px">${vb}</div>
-          </div>
-        </div>
-      </div>`;
-    }
-
-    // ====== 핸들러 ======
-    $("#form-search").addEventListener("submit", async (e)=>{
-      e.preventDefault();
-      const box = $("#search-out");
-      box.innerHTML = "";
-      const region = $("#region").value.trim();
-      const name = $("#name").value.trim();
-      if (!name) return;
-      setLoading(e.currentTarget, true);
-      try{
-        let p;
-        try{
-          p = await fetchProfile(region, name);
-        }catch(err){
-          if (DEMO) { p = demoProfile(name); }
-          else throw err;
-        }
-        box.innerHTML = `<div class="card">${profileCard(p)}</div>`;
-      }catch(err){ addErr(err); box.innerHTML = `<div class="muted">불러오기 실패</div>`; }
-      finally{ setLoading(e.currentTarget, false); }
-    });
-
-    $("#form-compare").addEventListener("submit", async (e)=>{
-      e.preventDefault();
-      const box = $("#compare-out");
-      box.innerHTML = "";
-      const region = $("#region2").value.trim();
-      const a = $("#nameA").value.trim();
-      const b = $("#nameB").value.trim();
-      if (!a || !b) return;
-      setLoading(e.currentTarget, true);
-      try{
-        let A,B;
-        try{
-          [A,B] = await Promise.all([fetchProfile(region,a), fetchProfile(region,b)]);
-        }catch(err){
-          if (DEMO){ A = demoProfile(a); B = demoProfile(b); }
-          else throw err;
-        }
-        box.innerHTML = compareView(A,B);
-      }catch(err){ addErr(err); box.innerHTML = `<div class="muted">불러오기 실패</div>`; }
-      finally{ setLoading(e.currentTarget, false); }
-    });
-
-    // ====== 접근성: 엔터 제출 기본 적용 완료 ======
-  </script>
+function regionSel(id){
+  return `<select id="${id}">
+    <option value="kr">KR</option><option value="na1">NA</option><option value="euw1">EUW</option><option value="eun1">EUNE</option><option value="jp1">JP</option>
+  </select>`;
+}
+const esc = (s)=>String(s).replace(/[&<>"']/g,m=>({ "&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#039;" }[m]));
+go(0); // 기본: 검색
+</script>
 </body>
 </html>
