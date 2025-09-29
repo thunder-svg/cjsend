@@ -5,239 +5,284 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Thunder • 전적검색 + 비교</title>
   <meta name="color-scheme" content="light dark">
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cpath d='M28 4l8 14h-8l8 14h-8l-8 14' stroke='%23fff' stroke-width='8' fill='none'/%3E%3C/svg%3E">
   <style>
     :root{--bg:#0b0b0c;--fg:#e7e7ea;--muted:#9aa0a6;--card:#151518;--acc:#6ea8fe;--ok:#2ecc71;--bad:#ff6b6b;--warn:#f0ad4e;--line:#242428}
-    @media (prefers-color-scheme: light){:root{--bg:#f8f9fb;--fg:#0b0b0c;--muted:#60646c;--card:#ffffff;--acc:#1256d6;--ok:#1a8f4d;--bad:#d63a3a;--warn:#b86e00;--line:#e8e8ef}}
-    *{box-sizing:border-box}html,body{height:100%}body{margin:0;font:14px/1.45 system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,Apple SD Gothic Neo,Noto Sans KR,sans-serif;background:var(--bg);color:var(--fg)}
-    .wrap{max-width:1100px;margin:0 auto;padding:24px}
-    header{display:flex;align-items:center;gap:12px;margin-bottom:12px}
-    .logo{font-weight:700;font-size:18px}
-    .tabs{display:flex;gap:6px}
-    .tab{padding:8px 12px;border:1px solid var(--line);background:var(--card);border-radius:999px;cursor:pointer}
-    .tab.active{background:var(--acc);color:#fff;border-color:var(--acc)}
-    .bar{display:grid;gap:8px;background:var(--card);border:1px solid var(--line);padding:12px;border-radius:12px;margin-top:8px}
-    .row{display:grid;grid-template-columns:1fr 1fr auto auto;gap:8px}
-    input[type=text]{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:transparent;color:var(--fg)}
-    select,button{padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--fg);cursor:pointer}
-    button.primary{background:var(--acc);border-color:var(--acc);color:#fff}
-    button:disabled{opacity:.6;cursor:not-allowed}
-    .hint{color:var(--muted);font-size:12px}
-    .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px}
-    .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px}
-    .title{font-weight:700;margin-bottom:8px}
-    .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
-    .kpi{border:1px solid var(--line);border-radius:10px;padding:10px;text-align:center}
-    .kpi .val{font-weight:700;font-size:16px}
-    .table{width:100%;border-collapse:collapse;border:1px solid var(--line);border-radius:10px;overflow:hidden}
-    .table th,.table td{padding:10px;border-bottom:1px solid var(--line);text-align:center}
-    .table th{background:rgba(127,127,127,.08)}
-    .pill{display:inline-block;padding:2px 8px;border-radius:999px;border:1px solid var(--line);font-size:12px}
-    .sp{flex:1}.toast{position:fixed;right:12px;bottom:12px;background:var(--card);border:1px solid var(--line);padding:10px 12px;border-radius:10px}
-    footer{margin-top:24px;color:var(--muted);font-size:12px}
-    @media (max-width:900px){.row{grid-template-columns:1fr}.grid{grid-template-columns:1fr}.kpis{grid-template-columns:repeat(2,1fr)}}
+    @media (prefers-color-scheme: light){
+      :root{--bg:#f8f9fb;--fg:#0b0b0c;--muted:#60646c;--card:#ffffff;--line:#e7e9ef}
+    }
+    *{box-sizing:border-box}
+    body{margin:0;background:var(--bg);color:var(--fg);font:14px/1.5 system-ui,-apple-system,Segoe UI,Roboto,Apple SD Gothic Neo,Noto Sans KR,Arial}
+    a{color:var(--acc);text-decoration:none}
+    .wrap{max-width:1100px;margin:0 auto;padding:20px}
+    header{display:flex;align-items:center;gap:12px;margin-bottom:16px}
+    .logo{font-weight:700;letter-spacing:.3px}
+    .chip{font-size:12px;padding:2px 8px;border-radius:999px;background:var(--card);border:1px solid var(--line);color:var(--muted)}
+    .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px}
+    .grid{display:grid;gap:12px}
+    .g2{grid-template-columns:1fr 1fr}
+    .g3{grid-template-columns:1fr 1fr 1fr}
+    @media (max-width:860px){.g2,.g3{grid-template-columns:1fr}}
+    input,select,button{height:40px;border-radius:10px;border:1px solid var(--line);background:transparent;color:var(--fg);padding:0 12px}
+    input::placeholder{color:var(--muted)}
+    button{background:var(--acc);color:#0b0b0c;border:none;font-weight:600;cursor:pointer}
+    button[disabled]{opacity:.5;cursor:not-allowed}
+    .row{display:flex;gap:8px;flex-wrap:wrap}
+    .bar{height:10px;background:var(--line);border-radius:999px;overflow:hidden}
+    .bar>i{display:block;height:100%;background:var(--ok)}
+    .muted{color:var(--muted)}
+    .err{position:fixed;right:14px;bottom:14px;background:#1a1a1f;border:1px solid var(--line);color:#fff;padding:8px 10px;border-radius:12px;font-size:12px}
+    .kpi{display:flex;gap:8px;align-items:baseline}
+    .kpi .v{font:600 18px/1 system-ui}
+    .kpi .l{color:var(--muted);font-size:12px}
+    .pill{padding:2px 8px;border:1px solid var(--line);border-radius:999px;color:var(--muted);font-size:12px}
+    .hr{height:1px;background:var(--line);margin:10px 0}
+    .loading{opacity:.6;pointer-events:none}
   </style>
 </head>
 <body>
   <div class="wrap">
     <header>
-      <div class="logo">⚡ Thunder 전적</div>
-      <div class="sp"></div>
-      <div class="tabs" role="tablist">
-        <button id="tab-search" class="tab active" role="tab" aria-selected="true">전적검색</button>
-        <button id="tab-compare" class="tab" role="tab" aria-selected="false">비교하기</button>
-        <button id="share" title="현재 링크 복사">링크복사</button>
-      </div>
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M3 12h5l3-9 3 18 3-9h4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      <div class="logo">Thunder</div>
+      <span class="chip">전적검색</span>
+      <span class="chip">비교</span>
     </header>
 
-    <!-- 전적검색 -->
-    <section id="view-search" class="bar" role="tabpanel" aria-labelledby="tab-search">
-      <div class="row">
-        <input id="sId" type="text" placeholder="Riot ID (예: Faker#KR1)" autocomplete="off" />
-        <select id="sPlatform" aria-label="플랫폼">
-          <option value="kr" selected>KR</option><option value="jp1">JP</option><option value="euw1">EUW</option>
-          <option value="eun1">EUNE</option><option value="na1">NA</option><option value="br1">BR</option>
-          <option value="la1">LAN</option><option value="la2">LAS</option><option value="tr1">TR</option>
-          <option value="ru">RU</option><option value="oc1">OCE</option><option value="ph2">PH</option>
-          <option value="sg2">SG</option><option value="th2">TH</option><option value="tw2">TW</option><option value="vn2">VN</option>
-        </select>
-        <button id="searchBtn" class="primary">검색</button>
+    <section class="grid g2">
+      <div class="card">
+        <h3 style="margin:0 0 10px">전적 검색</h3>
+        <form id="form-search" class="grid" style="grid-template-columns: 110px 1fr 110px; gap:8px">
+          <select id="region">
+            <option value="kr">KR</option>
+            <option value="na1">NA</option>
+            <option value="euw1">EUW</option>
+            <option value="eun1">EUNE</option>
+            <option value="jp1">JP</option>
+          </select>
+          <input id="name" placeholder="소환사 이름" autocomplete="off" />
+          <button id="btn-search" type="submit">검색</button>
+        </form>
+        <div id="search-out" style="margin-top:12px"></div>
       </div>
-      <div class="hint">형식: <code>게임명#태그</code>. 최근 10게임 요약과 샘플을 표시.</div>
-      <div id="sResult" class="grid" aria-live="polite" style="margin-top:12px"></div>
+
+      <div class="card">
+        <h3 style="margin:0 0 10px">비교하기</h3>
+        <form id="form-compare" class="grid" style="grid-template-columns: 110px 1fr 1fr 110px; gap:8px">
+          <select id="region2">
+            <option value="kr">KR</option>
+            <option value="na1">NA</option>
+            <option value="euw1">EUW</option>
+            <option value="eun1">EUNE</option>
+            <option value="jp1">JP</option>
+          </select>
+          <input id="nameA" placeholder="소환사 A" autocomplete="off" />
+          <input id="nameB" placeholder="소환사 B" autocomplete="off" />
+          <button id="btn-compare" type="submit">비교</button>
+        </form>
+        <div id="compare-out" style="margin-top:12px"></div>
+      </div>
     </section>
 
-    <!-- 비교하기 -->
-    <section id="view-compare" class="bar" role="tabpanel" aria-labelledby="tab-compare" hidden>
+    <section class="card" style="margin-top:12px">
       <div class="row">
-        <input id="idA" type="text" placeholder="소환사A (예: Hide on bush#KR1)" autocomplete="off" />
-        <input id="idB" type="text" placeholder="소환사B (예: Faker#KR1)" autocomplete="off" />
-        <select id="platform" aria-label="플랫폼">
-          <option value="kr" selected>KR</option><option value="jp1">JP</option><option value="euw1">EUW</option>
-          <option value="eun1">EUNE</option><option value="na1">NA</option><option value="br1">BR</option>
-          <option value="la1">LAN</option><option value="la2">LAS</option><option value="tr1">TR</option>
-          <option value="ru">RU</option><option value="oc1">OCE</option><option value="ph2">PH</option>
-          <option value="sg2">SG</option><option value="th2">TH</option><option value="tw2">TW</option><option value="vn2">VN</option>
-        </select>
-        <button id="compare" class="primary">비교하기</button>
+        <span class="pill">자동 다크/라이트</span>
+        <span class="pill">엔터 제출</span>
+        <span class="pill">데모 폴백</span>
+        <span class="pill">CORS 안전</span>
       </div>
-      <div class="hint">두 Riot ID 입력. 최근 10게임 기준 비교.</div>
-      <section id="cResult" class="grid" aria-live="polite" style="margin-top:12px"></section>
     </section>
-
-    <footer><div>v2025-09-28 • 캐시 5분 • Worker CORS_ORIGIN=GitHub Pages 호스트</div></footer>
   </div>
 
-  <div id="toast" class="toast" hidden></div>
+  <div id="err" class="err" hidden>0 error</div>
 
   <script type="module">
-    // ====== CONFIG ======
-    const API_BASE = "https://yee.mfleon32.workers.dev"; // 네 워커 도메인. 끝 슬래시 금지.
-    const DEFAULT_COUNT = 10;
+    // ====== 환경설정 ======
+    // TODO: 너의 Cloudflare Worker 주소로 교체
+    const API_BASE = "https://yee.mfleon32.workers.dev/";
+    const DEMO = true; // API 미연결 시 true 유지
 
-    // ====== UTIL ======
-    const $ = (s, el=document) => el.querySelector(s);
-    const showToast = (m) => { const el=$('#toast'); el.textContent=m; el.hidden=false; setTimeout(()=>el.hidden=true, 3500) };
-    const parseRiotId = (s) => {
-      if (!s) return null;
-      const t = s.trim().replace(/\s*#\s*/, '#');
-      const i = t.indexOf('#'); if (i < 1) return null;
-      const gameName = t.slice(0, i).trim();
-      const tagLine = t.slice(i+1).replace(/\s+/g,'').toUpperCase();
-      if (!/^[A-Z0-9]{2,5}$/.test(tagLine)) return null;
-      return { gameName, tagLine, riotId: `${gameName}#${tagLine}` };
+    // ====== 유틸 ======
+    const $ = (sel, el=document) => el.querySelector(sel);
+    const outErr = $("#err");
+    let errCount = 0;
+    const addErr = (e) => {
+      errCount++;
+      outErr.textContent = errCount + " error";
+      outErr.hidden = false;
+      console.error(e);
     };
-    const pct = (n) => (n*100).toFixed(1)+'%';
-    const fmt = (n, d=1) => Number(n||0).toFixed(d);
-    const dur = (sec=0) => { const m=Math.floor(sec/60), s=Math.floor(sec%60); return `${m}:${String(s).padStart(2,'0')}` };
+    const setLoading = (el, on) => el.classList.toggle("loading", !!on);
 
-    // ====== API ======
-    async function loadProfile(riotId, platform, count=DEFAULT_COUNT){
-      const url = new URL('/v1/profile', API_BASE);
-      url.searchParams.set('riotId', riotId);
-      url.searchParams.set('platform', platform);
-      url.searchParams.set('count', String(count));
-      const r = await fetch(url, { headers: { 'Accept':'application/json' } });
-      if (!r.ok){
-        let msg=''; try{ const j=await r.json(); msg=j?.message||j?.error||'' }catch{}
-        throw new Error(`API ${r.status}${msg? ' '+msg:''}`);
-      }
+    const json = async (url) => {
+      const r = await fetch(url, { headers: { "Accept": "application/json" } });
+      if (!r.ok) throw new Error("HTTP " + r.status + " " + url);
       return r.json();
+    };
+
+    // ====== API 어댑터 (워커 라우트 규약) ======
+    // 워커에 아래 1개 합친 요약 엔드포인트가 있으면 사용:
+    // GET /v1/profile?region=kr&name=Faker&count=10
+    async function fetchProfile(region, name, count=10) {
+      const u = new URL(API_BASE + "/v1/profile");
+      u.searchParams.set("region", region);
+      u.searchParams.set("name", name);
+      u.searchParams.set("count", String(count));
+      return json(u.toString());
     }
 
-    // ====== RENDER ======
-    const kpi = (label,val,cls='') => `<div class="kpi"><div class="val ${cls}">${val}</div><div class="hint">${label}</div></div>`;
-    function sideCard(p){
-      const r=p.recent?.summary||{wins:0,losses:0,kills:0,deaths:0,assists:0,avgCS:0};
-      const games=(r.wins+r.losses)||1;
-      const wr=pct((r.wins||0)/((r.wins||0)+(r.losses||0)||1));
-      const kda=r.deaths?fmt((r.kills+r.assists)/r.deaths,2):'∞';
-      const rankSolo=(p.ranks?.solo?.tier||'UNRANKED')+(p.ranks?.solo?.rank?(' '+p.ranks.solo.rank):'');
-      const lpSolo=p.ranks?.solo?.lp!=null?`${p.ranks.solo.lp} LP`:'';
-      return `<div class="card">
-        <div class="title">${p.name||p.gameName} <span class="pill">${p.riotId}</span></div>
-        <div class="kpis">
-          ${kpi('솔로랭크',`${rankSolo} ${lpSolo}`)}
-          ${kpi('레벨',p.summoner?.summonerLevel??'-')}
-          ${kpi('승률',wr,(r.wins>=r.losses?'ok':'bad'))}
-          ${kpi('KDA',kda)}
-          ${kpi('평균 K',fmt(r.kills/games,1))}
-          ${kpi('평균 D',fmt(r.deaths/games,1))}
-          ${kpi('평균 A',fmt(r.assists/games,1))}
-          ${kpi('평균 CS',fmt(r.avgCS,1))}
-        </div></div>`;
+    // 폴백: 데모 데이터
+    function demoProfile(name) {
+      const sample = {
+        region: "kr",
+        name,
+        level: 413,
+        iconId: 4568,
+        rank: { queue: "RANKED_SOLO_5x5", tier: "CHALLENGER", division: "I", lp: 1020, wins: 720, losses: 610 },
+        last10: [
+          { k:8,d:2,a:7, win:true, cs:220, dur:31, champ:"Ahri" },
+          { k:3,d:5,a:9, win:true, cs:180, dur:28, champ:"Orianna" },
+          { k:10,d:1,a:11, win:true, cs:242, dur:33, champ:"Azir" },
+          { k:2,d:7,a:4, win:false, cs:160, dur:26, champ:"LeBlanc" },
+          { k:9,d:3,a:6, win:true, cs:210, dur:29, champ:"Akali" },
+          { k:4,d:6,a:8, win:false, cs:190, dur:30, champ:"Syndra" },
+          { k:7,d:2,a:5, win:true, cs:230, dur:32, champ:"Ahri" },
+          { k:11,d:4,a:3, win:true, cs:250, dur:34, champ:"Azir" },
+          { k:6,d:3,a:9, win:true, cs:205, dur:30, champ:"Viktor" },
+          { k:1,d:9,a:2, win:false, cs:150, dur:25, champ:"Yone" },
+        ]
+      };
+      return sample;
     }
-    function matchesTable(p){
-      const rows=(p.recent?.sample||[]).map(m=>`<tr>
-        <td>${m.matchId}</td><td>${m.win?'W':'L'}</td><td>${m.k}/${m.d}/${m.a}</td><td>${m.cs}</td><td>${dur(m.dur)}</td>
-      </tr>`).join('');
-      return `<div class="card">
-        <div class="title">최근 경기 샘플</div>
-        <table class="table"><thead><tr><th>매치ID</th><th>결과</th><th>K/D/A</th><th>CS</th><th>시간</th></tr></thead>
-        <tbody>${rows||'<tr><td colspan="5">데이터 없음</td></tr>'}</tbody></table>
+
+    // ====== 계산 ======
+    function aggKDA(last10){
+      const s = last10.reduce((a,m)=>{a.k+=m.k;a.d+=m.d;a.a+=m.a;a.w+=m.win?1:0;return a},{k:0,d:0,a:0,w:0});
+      const kda = s.d? (s.k+s.a)/s.d : (s.k+s.a);
+      return {games:last10.length, wins:s.w, winrate: Math.round((s.w/last10.length)*100),
+              k:s.k, d:s.d, a:s.a, kda: Number(kda.toFixed(2))};
+    }
+    const fmt = n => n.toLocaleString();
+
+    // ====== 렌더 ======
+    function profileCard(p){
+      const k = aggKDA(p.last10||[]);
+      return `
+        <div class="grid g2" style="align-items:center">
+          <div class="row" style="align-items:center;gap:12px">
+            <div style="width:54px;height:54px;border-radius:14px;background:#222;display:grid;place-items:center;font-weight:700">${String(p.iconId||"")}</div>
+            <div>
+              <div style="font-weight:700">${p.name} <span class="muted">LV ${fmt(p.level||0)}</span></div>
+              <div class="muted">${p.rank? `${p.rank.tier} ${p.rank.division} • ${p.rank.lp}LP`:"Unranked"}</div>
+            </div>
+          </div>
+          <div class="row" style="justify-content:flex-end;gap:16px">
+            <div class="kpi"><div class="v">${k.winrate}%</div><div class="l">승률(10)</div></div>
+            <div class="kpi"><div class="v">${k.kda}</div><div class="l">KDA</div></div>
+            <div class="kpi"><div class="v">${k.k}/${k.d}/${k.a}</div><div class="l">합산</div></div>
+          </div>
+        </div>
+        <div class="hr"></div>
+        <div class="grid g3">
+          ${laneStat(p.last10,"mid")}
+          ${laneStat(p.last10,"top")}
+          ${laneStat(p.last10,"adc")}
+        </div>
+      `;
+    }
+    function laneStat(last10,label){
+      const g = last10.length||1;
+      const wins = last10.filter(m=>m.win).length;
+      const w = Math.round((wins/g)*100);
+      return `<div>
+        <div class="row" style="justify-content:space-between"><b>${label.toUpperCase()}</b><span class="muted">${wins}/${g}</span></div>
+        <div class="bar"><i style="width:${w}%;background:${w>=50?'var(--ok)':'var(--bad)'}"></i></div>
       </div>`;
     }
-    function renderSearch(p){
-      const host=$('#sResult'); host.innerHTML='';
-      host.insertAdjacentHTML('beforeend', sideCard(p));
-      host.insertAdjacentHTML('beforeend', matchesTable(p));
+
+    function compareView(a,b){
+      const ka = aggKDA(a.last10||[]);
+      const kb = aggKDA(b.last10||[]);
+      const diff = (x,y)=> (x-y)>0? "+"+(x-y): String(x-y);
+      return `
+        <div class="grid g2">
+          <div class="card">${profileCard(a)}</div>
+          <div class="card">${profileCard(b)}</div>
+        </div>
+        <div class="card" style="margin-top:12px">
+          <h4 style="margin:0 0 8px">핵심 지표 비교</h4>
+          <div class="grid g3">
+            ${kpiBlock("승률(10)", ka.winrate+"%", kb.winrate+"%", diff(ka.winrate,kb.winrate)+"%")}
+            ${kpiBlock("KDA", ka.kda, kb.kda, diff(ka.kda,kb.kda))}
+            ${kpiBlock("합산 K/D/A", `${ka.k}/${ka.d}/${ka.a}`, `${kb.k}/${kb.d}/${kb.a}`, diff(ka.k+ka.a, kb.k+kb.a))}
+          </div>
+        </div>
+      `;
     }
-    function renderCompare(a,b){
-      const host=$('#cResult'); host.innerHTML='';
-      host.insertAdjacentHTML('beforeend', sideCard(a));
-      host.insertAdjacentHTML('beforeend', sideCard(b));
-      const A=a.recent?.summary||{}, B=b.recent?.summary||{};
-      const ag=(A.wins||0)+(A.losses||0)||1, bg=(B.wins||0)+(B.losses||0)||1;
-      const rows=[
-        ['승률',pct((A.wins||0)/ag),pct((B.wins||0)/bg)],
-        ['KDA',A.deaths?fmt(((A.kills||0)+(A.assists||0))/A.deaths,2):'∞',B.deaths?fmt(((B.kills||0)+(B.assists||0))/B.deaths,2):'∞'],
-        ['평균 K/D/A',`${fmt((A.kills||0)/ag,1)} / ${fmt((A.deaths||0)/ag,1)} / ${fmt((A.assists||0)/ag,1)}`,`${fmt((B.kills||0)/bg,1)} / ${fmt((B.deaths||0)/bg,1)} / ${fmt((B.assists||0)/bg,1)}`],
-        ['평균 CS',fmt(A.avgCS||0,1),fmt(B.avgCS||0,1)],
-        ['표본 수',ag,bg],
-      ];
-      const table=document.createElement('div'); table.className='card';
-      table.innerHTML=`<div class="title">상세 비교</div>
-        <table class="table"><thead><tr><th>지표</th><th>${a.riotId}</th><th>${b.riotId}</th></tr></thead>
-        <tbody>${rows.map(r=>`<tr><td>${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td></tr>`).join('')}</tbody></table>`;
-      host.parentElement.appendChild(table);
+    function kpiBlock(label, va, vb, delta){
+      const d = Number(delta.replace("+",""));
+      const good = d>0;
+      return `<div class="card">
+        <div class="row" style="justify-content:space-between"><b>${label}</b><span class="muted">Δ ${delta}</span></div>
+        <div class="row" style="gap:12px;margin-top:8px">
+          <div style="flex:1">
+            <div class="muted" style="font-size:12px">A</div>
+            <div class="bar"><i style="width:50%"></i></div>
+            <div style="margin-top:6px">${va}</div>
+          </div>
+          <div style="flex:1">
+            <div class="muted" style="font-size:12px">B</div>
+            <div class="bar"><i style="width:50%;background:${good?'var(--bad)':'var(--ok)'}"></i></div>
+            <div style="margin-top:6px">${vb}</div>
+          </div>
+        </div>
+      </div>`;
     }
 
-    // ====== ACTIONS ======
-    async function doSearch(){
-      const id=parseRiotId($('#sId').value), p=$('#sPlatform').value;
-      if(!id){ showToast('Riot ID 형식 오류. 예: Faker#KR1'); return }
-      $('#searchBtn').disabled=true;
+    // ====== 핸들러 ======
+    $("#form-search").addEventListener("submit", async (e)=>{
+      e.preventDefault();
+      const box = $("#search-out");
+      box.innerHTML = "";
+      const region = $("#region").value.trim();
+      const name = $("#name").value.trim();
+      if (!name) return;
+      setLoading(e.currentTarget, true);
       try{
-        const P=await loadProfile(id.riotId,p);
-        renderSearch(P);
-        history.replaceState(null,'',`#search=${encodeURIComponent(id.riotId)}&p=${p}`);
-      }catch(e){ console.error(e); showToast(String(e.message||e)); }
-      finally{ $('#searchBtn').disabled=false }
-    }
-    async function doCompare(){
-      const a=parseRiotId($('#idA').value), b=parseRiotId($('#idB').value), p=$('#platform').value;
-      if(!a||!b){ showToast('두 Riot ID를 모두 입력'); return }
-      $('#compare').disabled=true;
-      try{
-        const [A,B]=await Promise.all([loadProfile(a.riotId,p),loadProfile(b.riotId,p)]);
-        renderCompare(A,B);
-        history.replaceState(null,'',`#compare=${encodeURIComponent(a.riotId)}|${encodeURIComponent(b.riotId)}&p=${p}`);
-      }catch(e){ console.error(e); showToast(String(e.message||e)); }
-      finally{ $('#compare').disabled=false }
-    }
-
-    // ====== NAV ======
-    function switchTab(name){
-      const isSearch=name==='search';
-      $('#view-search').hidden=!isSearch; $('#view-compare').hidden=isSearch;
-      $('#tab-search').classList.toggle('active',isSearch);
-      $('#tab-compare').classList.toggle('active',!isSearch);
-    }
-    function bootFromHash(){
-      const h=location.hash.slice(1); if(!h) return;
-      if(h.startsWith('compare=')){
-        switchTab('compare');
-        const pair=decodeURIComponent(h.split('=')[1].split('&')[0]||'');
-        const [a,b]=pair.split('|'); const p=new URLSearchParams(h.split('&').slice(1).join('&')).get('p')||'kr';
-        if(a&&b){ $('#idA').value=a; $('#idB').value=b; $('#platform').value=p; doCompare(); }
-      }else if(h.startsWith('search=')){
-        switchTab('search');
-        const id=decodeURIComponent(h.split('=')[1].split('&')[0]||''); const p=new URLSearchParams(h.split('&').slice(1).join('&')).get('p')||'kr';
-        if(id){ $('#sId').value=id; $('#sPlatform').value=p; doSearch(); }
-      }
-    }
-
-    // events
-    document.addEventListener('click',(e)=>{
-      const id=e.target.id;
-      if(id==='searchBtn') doSearch();
-      if(id==='compare') doCompare();
-      if(id==='tab-search') switchTab('search');
-      if(id==='tab-compare') switchTab('compare');
-      if(id==='share'){ try{ navigator.clipboard.writeText(location.href); showToast('링크를 복사했습니다'); }catch{ showToast('복사 실패') } }
+        let p;
+        try{
+          p = await fetchProfile(region, name);
+        }catch(err){
+          if (DEMO) { p = demoProfile(name); }
+          else throw err;
+        }
+        box.innerHTML = `<div class="card">${profileCard(p)}</div>`;
+      }catch(err){ addErr(err); box.innerHTML = `<div class="muted">불러오기 실패</div>`; }
+      finally{ setLoading(e.currentTarget, false); }
     });
-    document.addEventListener('keydown',(e)=>{ if(e.key==='Enter'){ if(!$('#view-search').hidden) doSearch(); else doCompare(); }});
-    window.addEventListener('DOMContentLoaded', bootFromHash);
+
+    $("#form-compare").addEventListener("submit", async (e)=>{
+      e.preventDefault();
+      const box = $("#compare-out");
+      box.innerHTML = "";
+      const region = $("#region2").value.trim();
+      const a = $("#nameA").value.trim();
+      const b = $("#nameB").value.trim();
+      if (!a || !b) return;
+      setLoading(e.currentTarget, true);
+      try{
+        let A,B;
+        try{
+          [A,B] = await Promise.all([fetchProfile(region,a), fetchProfile(region,b)]);
+        }catch(err){
+          if (DEMO){ A = demoProfile(a); B = demoProfile(b); }
+          else throw err;
+        }
+        box.innerHTML = compareView(A,B);
+      }catch(err){ addErr(err); box.innerHTML = `<div class="muted">불러오기 실패</div>`; }
+      finally{ setLoading(e.currentTarget, false); }
+    });
+
+    // ====== 접근성: 엔터 제출 기본 적용 완료 ======
   </script>
 </body>
 </html>
