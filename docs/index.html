@@ -1,100 +1,42 @@
 <!doctype html>
 <html lang="ko">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Thunder • 전적검색 + 비교</title>
-  <meta name="color-scheme" content="light dark">
-  <style>
-    :root{--bg:#0b0b0c;--fg:#e7e7ea;--muted:#9aa0a6;--card:#151518;--acc:#6ea8fe;--ok:#2ecc71;--bad:#ff6b6b;--warn:#f0ad4e;--line:#242428}
-    @media (prefers-color-scheme: light){
-      :root{--bg:#f8f9fb;--fg:#0b0b0c;--muted:#60646c;--card:#ffffff;--line:#e7e9ef}
-    }
-    *{box-sizing:border-box}
-    body{margin:0;background:var(--bg);color:var(--fg);font:14px/1.5 system-ui,-apple-system,Segoe UI,Roboto,Apple SD Gothic Neo,Noto Sans KR,Arial}
-    a{color:var(--acc);text-decoration:none}
-    .wrap{max-width:1100px;margin:0 auto;padding:20px}
-    header{display:flex;align-items:center;gap:12px;margin-bottom:16px}
-    .logo{font-weight:700;letter-spacing:.3px}
-    .chip{font-size:12px;padding:2px 8px;border-radius:999px;background:var(--card);border:1px solid var(--line);color:var(--muted)}
-    .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px}
-    .grid{display:grid;gap:12px}
-    .g2{grid-template-columns:1fr 1fr}
-    .g3{grid-template-columns:1fr 1fr 1fr}
-    @media (max-width:860px){.g2,.g3{grid-template-columns:1fr}}
-    input,select,button{height:40px;border-radius:10px;border:1px solid var(--line);background:transparent;color:var(--fg);padding:0 12px}
-    input::placeholder{color:var(--muted)}
-    button{background:var(--acc);color:#0b0b0c;border:none;font-weight:600;cursor:pointer}
-    button[disabled]{opacity:.5;cursor:not-allowed}
-    .row{display:flex;gap:8px;flex-wrap:wrap}
-    .bar{height:10px;background:var(--line);border-radius:999px;overflow:hidden}
-    .bar>i{display:block;height:100%;background:var(--ok)}
-    .muted{color:var(--muted)}
-    .err{position:fixed;right:14px;bottom:14px;background:#1a1a1f;border:1px solid var(--line);color:#fff;padding:8px 10px;border-radius:12px;font-size:12px}
-    .kpi{display:flex;gap:8px;align-items:baseline}
-    .kpi .v{font:600 18px/1 system-ui}
-    .kpi .l{color:var(--muted);font-size:12px}
-    .pill{padding:2px 8px;border:1px solid var(--line);border-radius:999px;color:var(--muted);font-size:12px}
-    .hr{height:1px;background:var(--line);margin:10px 0}
-    .loading{opacity:.6;pointer-events:none}
-  </style>
-  <script type="module" crossorigin src="/cjsend/assets/index-CsJI-W8w.js"></script>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Thunder • 전적검색·비교·랭킹</title>
+<meta name="color-scheme" content="light dark">
+<style>
+:root{--bg:#0b0b0c;--fg:#e7e7ea;--muted:#9aa0a6;--card:#151518;--acc:#6ea8fe;--ok:#2ecc71;--bad:#ff6b6b;--warn:#f0ad4e;--line:#242428}
+@media (prefers-color-scheme: light){:root{--bg:#f8f9fb;--fg:#0b0b0c;--muted:#60646c;--card:#ffffff;--line:#e7e9ef}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:14px/1.5 system-ui,-apple-system,Segoe UI,Roboto,Apple SD Gothic Neo,Noto Sans KR}
+a{color:var(--acc);text-decoration:none}.wrap{max-width:1140px;margin:0 auto;padding:18px}
+header{display:flex;align-items:center;gap:10px;margin-bottom:10px}.logo{font-weight:700}
+.nav{display:flex;gap:6px;flex-wrap:wrap}.tab{padding:6px 10px;border:1px solid var(--line);border-radius:999px;cursor:pointer}
+.tab[aria-selected="true"]{background:var(--acc);color:#0b0b0c;border-color:transparent}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px}.grid{display:grid;gap:10px}
+.g2{grid-template-columns:1fr 1fr}.g3{grid-template-columns:repeat(3,1fr)}
+@media (max-width:860px){.g2,.g3{grid-template-columns:1fr}}
+input,select,button{height:40px;border-radius:10px;border:1px solid var(--line);background:transparent;color:var(--fg);padding:0 12px}
+button{background:var(--acc);color:#0b0b0c;border:none;font-weight:600;cursor:pointer}button[disabled]{opacity:.5;cursor:not-allowed}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.muted{color:var(--muted)}.hr{height:1px;background:var(--line);margin:10px 0}
+.bar{height:10px;background:var(--line);border-radius:999px;overflow:hidden}.bar>i{display:block;height:100%;background:var(--ok)}
+.kpi{display:flex;gap:8px;align-items:baseline}.kpi .v{font:600 18px/1 system-ui}.pill{padding:2px 8px;border:1px solid var(--line);border-radius:999px;color:var(--muted);font-size:12px}
+.table{width:100%;border-collapse:collapse}.table th,.table td{padding:8px;border-bottom:1px solid var(--line);text-align:left}
+.loading{opacity:.6;pointer-events:none}.err{position:fixed;right:12px;bottom:12px;background:#1a1a1f;border:1px solid var(--line);color:#fff;padding:8px 10px;border-radius:12px;font-size:12px}
+</style>
+  <script type="module" crossorigin src="/cjsend/assets/index-CYI5M_rx.js"></script>
 </head>
 <body>
-  <div class="wrap">
-    <header>
-      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M3 12h5l3-9 3 18 3-9h4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-      <div class="logo">Thunder</div>
-      <span class="chip">전적검색</span>
-      <span class="chip">비교</span>
-    </header>
+<div class="wrap">
+  <header>
+    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M3 12h5l3-9 3 18 3-9h4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+    <div class="logo">Thunder</div>
+    <nav class="nav" id="nav"></nav>
+  </header>
 
-    <section class="grid g2">
-      <div class="card">
-        <h3 style="margin:0 0 10px">전적 검색</h3>
-        <form id="form-search" class="grid" style="grid-template-columns: 110px 1fr 110px; gap:8px">
-          <select id="region">
-            <option value="kr">KR</option>
-            <option value="na1">NA</option>
-            <option value="euw1">EUW</option>
-            <option value="eun1">EUNE</option>
-            <option value="jp1">JP</option>
-          </select>
-          <input id="name" placeholder="소환사 이름" autocomplete="off" />
-          <button id="btn-search" type="submit">검색</button>
-        </form>
-        <div id="search-out" style="margin-top:12px"></div>
-      </div>
-
-      <div class="card">
-        <h3 style="margin:0 0 10px">비교하기</h3>
-        <form id="form-compare" class="grid" style="grid-template-columns: 110px 1fr 1fr 110px; gap:8px">
-          <select id="region2">
-            <option value="kr">KR</option>
-            <option value="na1">NA</option>
-            <option value="euw1">EUW</option>
-            <option value="eun1">EUNE</option>
-            <option value="jp1">JP</option>
-          </select>
-          <input id="nameA" placeholder="소환사 A" autocomplete="off" />
-          <input id="nameB" placeholder="소환사 B" autocomplete="off" />
-          <button id="btn-compare" type="submit">비교</button>
-        </form>
-        <div id="compare-out" style="margin-top:12px"></div>
-      </div>
-    </section>
-
-    <section class="card" style="margin-top:12px">
-      <div class="row">
-        <span class="pill">자동 다크/라이트</span>
-        <span class="pill">엔터 제출</span>
-        <span class="pill">데모 폴백</span>
-        <span class="pill">CORS 안전</span>
-      </div>
-    </section>
-  </div>
-
-  <div id="err" class="err" hidden>0 error</div>
+  <section id="view"></section>
+</div>
+<div id="err" class="err" hidden>0 error</div>
 
 </body>
 </html>
