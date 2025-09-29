@@ -29,3 +29,7 @@ button[disabled]{opacity:.5;cursor:not-allowed}
 .err{position:fixed;right:12px;bottom:12px;background:#1a1a1f;border:1px solid var(--line);color:#fff;padding:8px 10px;border-radius:12px;font-size:12px}
 .avatar{width:54px;height:54px;border-radius:14px;background:#222;display:grid;place-items:center;font-weight:700}
 .pill{padding:2px 8px;border:1px solid var(--line);border-radius:999px;color:var(--muted);font-size:12px}
+.badge{padding:2px 8px;border-radius:999px;border:1px solid var(--line);font-size:12px}
+.badge.win{background:var(--ok);color:#0b0b0c;border-color:transparent}
+.badge.lose{background:var(--bad);color:#0b0b0c;border-color:transparent}
+
