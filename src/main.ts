@@ -155,7 +155,7 @@ function viewHistory() {
       <div class="row" style="margin-top:8px;gap:8px">
         <select id="queue"><option value="">큐: 전체</option><option value="420">솔로랭크</option><option value="440">자유랭크</option><option value="450">칼바람</option><option value="430">일반</option></select>
         <select id="champ"><option value="">챔피언: 전체</option></select>
-        <select id="result"><option value="">결과: 전체</option><option value="win">승</option><option value="lose">패</option></select>
+        <select id="result"><option value="">결과: 전체</option><option value="win">승</option><option value="loss">패</option></select>
         <select id="patch"><option value="">패치: 전체</option></select>
         <button id="prev" type="button">이전</button>
         <button id="next" type="button">다음</button>
@@ -223,7 +223,7 @@ function viewHistory() {
       params.set("start", String(cursor));
       params.set("count", String(PAGE));
       const q = ($("#queue") as HTMLSelectElement).value; if (q) params.set("queue", q);
-      const c = ($("#champ") as HTMLSelectElement).value; if (c) params.set("championId", c);
+      const c = ($("#champ") as HTMLSelectElement).value; if (c) params.set("champion", c);
       const r = ($("#result") as HTMLSelectElement).value; if (r) params.set("result", r);
       const p = ($("#patch") as HTMLSelectElement).value; if (p) params.set("patch", p);
       const d: any = await json(API_BASE + "/v1/matches?" + params.toString());
@@ -518,7 +518,33 @@ function viewLive() {
       u.searchParams.set("name", name);
       const d: any = await json(u.toString());
       if (!d.inGame) { $("#box").innerHTML = `<div class="muted">게임 중 아님</div>`; return; }
-      $("#box").innerHTML = `<pre style="white-space:pre-wrap">${esc(JSON.stringify(d.game, null, 2))}</pre>`;
+
+      const row = (p: any) => {
+        const rune = p.runes?.keystone?.icon ? `<img alt="" src="${p.runes.keystone.icon}" width="20" height="20" style="vertical-align:middle">` : "";
+        const sub  = p.runes?.secondary?.icon ? `<img alt="" src="${p.runes.secondary.icon}" width="18" height="18" style="vertical-align:middle;opacity:.8">` : "";
+        const items = (p.starters||[]).map((it:any)=> it.icon ? `<img alt="${esc(it.name)}" src="${it.icon}" width="22" height="22" style="border-radius:4px">` : "").join(" ");
+        const wr = (p.soloWr==null) ? "-" : `${p.soloWr}%`;
+        return `<tr>
+          <td>${esc(p.championName)}</td>
+          <td>${esc(p.summonerName)}</td>
+          <td>${esc(p.rankShort)}</td>
+          <td class="c">${wr}</td>
+          <td class="c">${rune} ${sub}</td>
+          <td class="c">${items||"-"}</td>
+        </tr>`;
+      };
+      const patch = d.version ? esc(String(d.version).split(".").slice(0,2).join(".")) : "";
+      const team = (title: string, arr: any[]) => `
+        <div class="card">
+          <div class="row" style="justify-content:space-between"><strong>${title}</strong>
+            <span class="muted">${patch ? `패치 ${patch}` : ""}</span>
+          </div>
+          <table class="table">
+            <thead><tr><th>챔피언</th><th>소환사</th><th>랭크</th><th class="c">솔랭 WR</th><th class="c">룬</th><th class="c">시작템</th></tr></thead>
+            <tbody>${arr.map(row).join("")}</tbody>
+          </table>
+        </div>`;
+      $("#box").innerHTML = team("블루 팀", d.blue||[]) + team("레드 팀", d.red||[]);
     } catch (err) { addErr(err); $("#box").innerHTML = `<div class="muted">불러오기 실패</div>`; }
     finally { btn.disabled = false; }
   });
