@@ -38,7 +38,7 @@ button{background:var(--acc);color:#0b0b0c;border:none;font-weight:600;cursor:po
 <div id="err" class="err" hidden>0 error</div>
 
 <script type="module">
-const API_BASE = "https://YOUR-WORKER-NAME.workers.dev"; // 교체
+const API_BASE = "https://yee.mfleon32.workers.dev/"; // 교체
 const $ = (s,el=document)=>el.querySelector(s);
 const out = $("#view"); const nav = $("#nav"); const outErr=$("#err"); let errN=0;
 const addErr = (e)=>{errN++; outErr.textContent = errN+" error"; outErr.hidden=false; console.error(e);};
