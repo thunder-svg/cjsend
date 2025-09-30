@@ -32,4 +32,6 @@ button[disabled]{opacity:.5;cursor:not-allowed}
 .badge{padding:2px 8px;border-radius:999px;border:1px solid var(--line);font-size:12px}
 .badge.win{background:var(--ok);color:#0b0b0c;border-color:transparent}
 .badge.lose{background:var(--bad);color:#0b0b0c;border-color:transparent}
+.table td.num, .table th.num { text-align: right; }
+
 
