@@ -1,42 +1,25 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="ko">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Thunder • 전적검색·비교·랭킹</title>
-<meta name="color-scheme" content="light dark">
-<style>
-:root{--bg:#0b0b0c;--fg:#e7e7ea;--muted:#9aa0a6;--card:#151518;--acc:#6ea8fe;--ok:#2ecc71;--bad:#ff6b6b;--warn:#f0ad4e;--line:#242428}
-@media (prefers-color-scheme: light){:root{--bg:#f8f9fb;--fg:#0b0b0c;--muted:#60646c;--card:#ffffff;--line:#e7e9ef}}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:14px/1.5 system-ui,-apple-system,Segoe UI,Roboto,Apple SD Gothic Neo,Noto Sans KR}
-a{color:var(--acc);text-decoration:none}.wrap{max-width:1140px;margin:0 auto;padding:18px}
-header{display:flex;align-items:center;gap:10px;margin-bottom:10px}.logo{font-weight:700}
-.nav{display:flex;gap:6px;flex-wrap:wrap}.tab{padding:6px 10px;border:1px solid var(--line);border-radius:999px;cursor:pointer}
-.tab[aria-selected="true"]{background:var(--acc);color:#0b0b0c;border-color:transparent}
-.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px}.grid{display:grid;gap:10px}
-.g2{grid-template-columns:1fr 1fr}.g3{grid-template-columns:repeat(3,1fr)}
-@media (max-width:860px){.g2,.g3{grid-template-columns:1fr}}
-input,select,button{height:40px;border-radius:10px;border:1px solid var(--line);background:transparent;color:var(--fg);padding:0 12px}
-button{background:var(--acc);color:#0b0b0c;border:none;font-weight:600;cursor:pointer}button[disabled]{opacity:.5;cursor:not-allowed}
-.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.muted{color:var(--muted)}.hr{height:1px;background:var(--line);margin:10px 0}
-.bar{height:10px;background:var(--line);border-radius:999px;overflow:hidden}.bar>i{display:block;height:100%;background:var(--ok)}
-.kpi{display:flex;gap:8px;align-items:baseline}.kpi .v{font:600 18px/1 system-ui}.pill{padding:2px 8px;border:1px solid var(--line);border-radius:999px;color:var(--muted);font-size:12px}
-.table{width:100%;border-collapse:collapse}.table th,.table td{padding:8px;border-bottom:1px solid var(--line);text-align:left}
-.loading{opacity:.6;pointer-events:none}.err{position:fixed;right:12px;bottom:12px;background:#1a1a1f;border:1px solid var(--line);color:#fff;padding:8px 10px;border-radius:12px;font-size:12px}
-</style>
-  <script type="module" crossorigin src="/cjsend/assets/index-BpVIlrct.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Thunder - 전적 검색</title>
 </head>
 <body>
-<div class="wrap">
-  <header>
-    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M3 12h5l3-9 3 18 3-9h4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-    <div class="logo">Thunder</div>
-    <nav class="nav" id="nav"></nav>
-  </header>
+  <div id="search">
+    <form id="searchForm">
+      <input type="text" id="riotId" placeholder="Riot ID (예: Faker#KR1)" required />
+      <select id="region">
+        <option value="kr">KR</option>
+        <option value="na1">NA</option>
+        <option value="euw1">EUW</option>
+      </select>
+      <button type="submit">검색</button>
+    </form>
+  </div>
 
-  <section id="view"></section>
-</div>
-<div id="err" class="err" hidden>0 error</div>
+  <div id="profileContainer"></div>
 
+  <script src="search.js"></script> <!-- search.js 파일을 로드 -->
 </body>
 </html>
