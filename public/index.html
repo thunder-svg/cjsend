@@ -1,16 +1,25 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ko">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Thunder - 전적검색 및 코칭 서비스">
-    <meta property="og:title" content="Thunder - 전적검색 및 코칭 서비스">
-    <meta property="og:description" content="리그 오브 레전드의 고급 분석과 코칭 서비스를 제공합니다.">
-    <meta property="og:image" content="https://your-site.com/snapshot.png">
-    <title>Thunder</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Thunder - 전적 검색</title>
 </head>
 <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.ts"></script>
+  <div id="search">
+    <form id="searchForm">
+      <input type="text" id="riotId" placeholder="Riot ID (예: Faker#KR1)" required />
+      <select id="region">
+        <option value="kr">KR</option>
+        <option value="na1">NA</option>
+        <option value="euw1">EUW</option>
+      </select>
+      <button type="submit">검색</button>
+    </form>
+  </div>
+
+  <div id="profileContainer"></div>
+
+  <script src="search.js"></script> <!-- search.js 파일을 로드 -->
 </body>
 </html>
