@@ -1,0 +1,9 @@
+// apps/web/src/locales/ko/translation.json
+{
+  "search": "검색",
+  "compare": "비교",
+  "ranking": "랭킹",
+  "riot_id_or_name": "Riot ID 또는 소환사명",
+  "region": "지역",
+  "use_mock": "모의데이터 사용(mock)"
+}
