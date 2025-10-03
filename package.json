@@ -1,12 +1,14 @@
 {
+  "name": "thunder-root",
   "private": true,
+  "version": "1.0.0",
+  "packageManager": "pnpm@9.9.0",
+  "workspaces": ["apps/web","apps/api"],
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "preview": "vite preview"
-  },
-  "devDependencies": {
-    "vite": "^5",
-    "typescript": "^5"
+    "dev": "pnpm -r --parallel dev",
+    "build": "pnpm -r build",
+    "typecheck": "pnpm -r typecheck",
+    "lint": "pnpm -r lint",
+    "test": "pnpm -r test -- --run"
   }
 }
