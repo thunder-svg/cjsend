@@ -1,0 +1,39 @@
+# apps/api/openapi.yml
+openapi: 3.0.3
+info: { title: Thunder API, version: "1.0.0" }
+paths:
+  /healthz: { get: { summary: Health, responses: { "200": { description: ok } } } }
+  /search:
+    get:
+      summary: Riot ID/소환사명 검색
+      parameters:
+        - { name: query, in: query, required: true, schema: { type: string } }
+        - { name: region, in: query, required: true, schema: { type: string, example: kr } }
+        - { name: mock, in: query, required: false, schema: { type: string, enum: ["0","1"] } }
+      responses: { "200": { description: summary } }
+  /matches:
+    get:
+      summary: 최근 매치 목록
+      parameters:
+        - { name: query, in: query, schema: { type: string } }
+        - { name: puuid, in: query, schema: { type: string } }
+        - { name: region, in: query, required: true, schema: { type: string } }
+        - { name: start, in: query, schema: { type: integer } }
+        - { name: count, in: query, schema: { type: integer } }
+      responses: { "200": { description: list } }
+  /compare:
+    get:
+      summary: 두 소환사 비교
+      parameters:
+        - { name: left, in: query, required: true, schema: { type: string } }
+        - { name: right, in: query, required: true, schema: { type: string } }
+        - { name: region, in: query, required: true, schema: { type: string } }
+        - { name: mock, in: query, schema: { type: string, enum: ["0","1"] } }
+      responses: { "200": { description: compare } }
+  /ranking:
+    get:
+      summary: 랭킹 스냅샷
+      parameters:
+        - { name: region, in: query, required: true, schema: { type: string } }
+        - { name: queue, in: query, required: true, schema: { type: string } }
+      responses: { "200": { description: ranking } }
