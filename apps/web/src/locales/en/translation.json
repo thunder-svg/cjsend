@@ -1,0 +1,9 @@
+// apps/web/src/locales/en/translation.json
+{
+  "search": "Search",
+  "compare": "Compare",
+  "ranking": "Ranking",
+  "riot_id_or_name": "Riot ID or Summoner Name",
+  "region": "Region",
+  "use_mock": "Use mock data"
+}
