@@ -1,0 +1,6 @@
+# pnpm-lock.yaml
+lockfileVersion: '9.0'
+settings:
+  autoInstallPeers: true
+  excludeLinksFromLockfile: false
+# 실제 해시는 설치 시 생성됨.
