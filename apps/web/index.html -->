@@ -1,0 +1,18 @@
+<!-- apps/web/index.html -->
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Thunder • 전적검색</title>
+    <meta name="color-scheme" content="light dark" />
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self' *">
+    <meta name="description" content="리그 오브 레전드 전적검색 • Riot ID 또는 소환사명으로 검색" />
+    <link rel="icon" href="./public/favicon.ico" />
+    <link rel="preconnect" href="https://ddragon.leagueoflegends.com" />
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="./src/main.tsx"></script>
+  </body>
+</html>
