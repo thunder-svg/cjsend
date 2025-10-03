@@ -1,0 +1,5 @@
+<!-- apps/web/src/assets/logo.svg -->
+<svg xmlns="http://www.w3.org/2000/svg" width="120" height="36" viewBox="0 0 120 36" role="img" aria-label="Thunder">
+  <rect width="120" height="36" rx="8" fill="#151518"/>
+  <text x="10" y="24" font-family="system-ui" font-size="18" fill="#6ea8fe">Thunder</text>
+</svg>
