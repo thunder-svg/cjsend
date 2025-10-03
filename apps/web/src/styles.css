@@ -1,0 +1,28 @@
+/* apps/web/src/styles.css */
+:root{
+  --bg:#0b0b0c;--fg:#e7e7ea;--muted:#9aa0a6;--card:#151518;--acc:#6ea8fe;--ok:#2ecc71;--bad:#ff6b6b;--warn:#f0ad4e;--line:#242428
+}
+@media (prefers-color-scheme: light){
+  :root{--bg:#f8f9fb;--fg:#0b0b0c;--muted:#60646c;--card:#ffffff;--line:#e5e7eb}
+}
+*{box-sizing:border-box}html,body,#root{height:100%}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.6 system-ui,-apple-system,Segoe UI,Roboto,Apple SD Gothic Neo,Malgun Gothic}
+a{color:var(--acc);text-decoration:none}
+.container{max-width:960px;margin:0 auto;padding:16px}
+header{display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--line)}
+h1{font-size:20px;margin:0}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px;margin:12px 0}
+.row{display:flex;gap:12px;flex-wrap:wrap}
+input,select,button{background:#111418;color:var(--fg);border:1px solid var(--line);border-radius:8px;padding:10px}
+button[type="button"],button[type="submit"]{cursor:pointer}
+label{display:block;margin-bottom:8px}
+.muted{color:var(--muted)}
+.grid{display:grid;grid-template-columns:1fr;gap:12px}
+@media(min-width:800px){.grid{grid-template-columns:1fr 2fr}}
+kbd{padding:2px 6px;border-radius:6px;border:1px solid var(--line);background:#0f1115}
+.badge{padding:2px 6px;border-radius:8px;border:1px solid var(--line);font-size:12px}
+.badge.ok{background:#122716;color:#baf7c1}
+.badge.bad{background:#2a1111;color:#f7baba}
+.list{list-style:none;padding:0;margin:0}
+.list li{display:flex;justify-content:space-between;border-bottom:1px dashed var(--line);padding:8px 0}
+.flex{display:flex;gap:8px;align-items:center}
